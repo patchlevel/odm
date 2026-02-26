@@ -1,27 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Patchlevel\ODM\Repository;
 
-/**
- * @template T of object
- */
+/** @template T of object */
 interface Repository
 {
-    /**
-     * @param T $object
-     */
+    /** @param T $object */
     public function save(object $object): void;
 
-    /**
-     * @param string $id
-     * @return T
-     */
+    /** @return T */
     public function load(string $id): object;
 
     public function remove(string $id): void;
 
     /**
      * @param array<string, mixed> $filter
+     *
      * @return iterable<T>
      */
     public function find(array $filter = []): iterable;
@@ -33,4 +29,6 @@ interface Repository
     public function createCollection(): void;
 
     public function dropCollection(): void;
+
+    public function updateIndexes(bool $dropUnknown = false): void;
 }

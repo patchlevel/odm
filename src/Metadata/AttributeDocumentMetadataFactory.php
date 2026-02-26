@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Patchlevel\ODM\Metadata;
 
 use Patchlevel\ODM\Attribute\Document;
 use Patchlevel\ODM\Attribute\Id;
+use Patchlevel\ODM\Attribute\Index as IndexAttribute;
 use Patchlevel\ODM\Index;
 use ReflectionClass;
 
@@ -55,13 +58,10 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
         );
     }
 
-    /**
-     * @param ReflectionClass $reflection
-     * @return list<Index>
-     */
+    /** @return list<Index> */
     private function indexes(ReflectionClass $reflection): array
     {
-        $attributes = $reflection->getAttributes(Index::class);
+        $attributes = $reflection->getAttributes(IndexAttribute::class);
 
         $indexes = [];
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Patchlevel\ODM\Repository;
 
 use Patchlevel\Hydrator\Hydrator;
@@ -7,12 +9,17 @@ use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\Rango\Collection;
 use Patchlevel\Rango\Database;
 
+use function array_map;
+use function in_array;
+use function str_ends_with;
+
 /**
  * @template T of object
  * @implements Repository<T>
  */
 final readonly class RangoRepository implements Repository
 {
+    /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
@@ -20,9 +27,7 @@ final readonly class RangoRepository implements Repository
     ) {
     }
 
-    /**
-     * @param T $object
-     */
+    /** @param T $object */
     public function save(object $object): void
     {
         $data = $this->hydrator->extract($object);
@@ -30,9 +35,7 @@ final readonly class RangoRepository implements Repository
         $this->collection()->insertOne($data);
     }
 
-    /**
-     * @return T
-     */
+    /** @return T */
     public function load(string $id): object
     {
         $data = $this->collection()->findOne(['_id' => $id]);
@@ -47,6 +50,7 @@ final readonly class RangoRepository implements Repository
 
     /**
      * @param array<string, mixed> $filter
+     *
      * @return iterable<T>
      */
     public function find(array $filter = []): iterable
@@ -80,16 +84,57 @@ final readonly class RangoRepository implements Repository
 
     public function createCollection(): void
     {
-        $indexes = $this->metadata->indexes;
-
-        $this->client->createCollection($this->metadata->collection);
-        foreach ($indexes as $index) {
-            $this->collection()->createIndex($index);
-        }
+        $this->updateIndexes();
     }
 
     public function dropCollection(): void
     {
         $this->database->getCollection($this->metadata->collection)->drop();
+    }
+
+    public function updateIndexes(bool $dropUnknown = false): void
+    {
+        $collection = $this->collection();
+
+        // Ensure collection exists.
+        $collection->countDocuments();
+
+        $desiredNames = [];
+
+        foreach ($this->metadata->indexes as $index) {
+            $keys = array_map(
+                static fn ($direction) => $direction === 'desc' ? -1 : 1,
+                $index->keys,
+            );
+
+            $collection->createIndex($keys, [
+                'name' => $index->name,
+                'unique' => $index->unique,
+            ]);
+
+            $desiredNames[] = $index->name;
+        }
+
+        if (!$dropUnknown) {
+            return;
+        }
+
+        $existingNames = array_map(
+            static fn (array $index): string => $index['name'],
+            $collection->listIndexes(),
+        );
+
+        foreach ($existingNames as $name) {
+            if (in_array($name, $desiredNames, true)) {
+                continue;
+            }
+
+            // Keep the built-in _id index.
+            if (str_ends_with($name, '_id_idx')) {
+                continue;
+            }
+
+            $collection->dropIndex($name);
+        }
     }
 }
