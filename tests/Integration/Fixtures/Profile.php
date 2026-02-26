@@ -10,13 +10,15 @@ use Patchlevel\ODM\Attribute\Index;
 
 #[Document('rango_documents')]
 #[Index('by_status', ['status' => 'asc'])]
-final readonly class RangoDocument
+final readonly class Profile
 {
+    /** @param list<Skill> $skills */
     public function __construct(
         #[Id]
         public string $id,
         public string $name,
-        public string $status,
+        public Status $status,
+        public array $skills,
     ) {
     }
 }

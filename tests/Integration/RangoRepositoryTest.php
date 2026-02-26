@@ -9,7 +9,9 @@ use Patchlevel\Hydrator\HydratorBuilder;
 use Patchlevel\ODM\Hydrator\ODMExtension;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
-use Patchlevel\ODM\Tests\Integration\Fixtures\RangoDocument;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Profile;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
 use Patchlevel\Rango\Client;
 use Patchlevel\Rango\Database;
 use PHPUnit\Framework\TestCase;
@@ -50,73 +52,119 @@ class RangoRepositoryTest extends TestCase
 
     public function testSave(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
-        $document = new RangoDocument('r-1', 'Rango', 'active');
+        $document = new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]);
         $repository->save($document);
 
         $raw = $repository->collection()->findOne(['_id' => 'r-1']);
 
         self::assertNotNull($raw);
-        self::assertSame(
-            ['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active'],
+        self::assertEquals(
+            ['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active', 'skills' => ['php']],
             $raw,
         );
     }
 
     public function testLoad(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
-        $repository->collection()->insertOne(['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active']);
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
         $loaded = $repository->load('r-1');
 
-        self::assertEquals(new RangoDocument('r-1', 'Rango', 'active'), $loaded);
+        self::assertEquals(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]), $loaded);
     }
 
     public function testHas(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
         self::assertFalse($repository->has('r-1'));
 
-        $repository->collection()->insertOne(['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active']);
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
 
         self::assertTrue($repository->has('r-1'));
     }
 
     public function testCount(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
         self::assertSame(0, $repository->count());
 
-        $repository->collection()->insertOne(['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active']);
-        $repository->collection()->insertOne(['_id' => 'r-2', 'name' => 'Beans', 'status' => 'inactive']);
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
 
         self::assertSame(2, $repository->count());
     }
 
     public function testFindWithFilter(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
-        $repository->collection()->insertOne(['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active']);
-        $repository->collection()->insertOne(['_id' => 'r-2', 'name' => 'Beans', 'status' => 'inactive']);
-        $repository->collection()->insertOne(['_id' => 'r-3', 'name' => 'Rango', 'status' => 'active']);
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['tracking'],
+        ]);
 
         $results = iterator_to_array($repository->find(['status' => 'active']), false);
 
         self::assertCount(2, $results);
-        self::assertSame(['r-1', 'r-3'], array_map(static fn (RangoDocument $doc) => $doc->id, $results));
+        self::assertSame(['r-1', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));
     }
 
     public function testRemove(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
-        $repository->collection()->insertOne(['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active']);
-        $repository->collection()->insertOne(['_id' => 'r-2', 'name' => 'Beans', 'status' => 'inactive']);
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
 
         $repository->remove('r-1');
 
@@ -127,8 +175,8 @@ class RangoRepositoryTest extends TestCase
 
     public function testDropCollection(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
-        $repository->save(new RangoDocument('r-1', 'Rango', 'active'));
+        $repository = $this->repositoryManager->get(Profile::class);
+        $repository->save(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
 
         $repository->dropCollection();
 
@@ -137,7 +185,7 @@ class RangoRepositoryTest extends TestCase
 
     public function testCreateCollectionCreatesIndexes(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
         $repository->createCollection();
 
@@ -149,7 +197,7 @@ class RangoRepositoryTest extends TestCase
 
     public function testUpdateIndexesCreatesIndexes(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
         $repository->updateIndexes();
 
@@ -161,7 +209,7 @@ class RangoRepositoryTest extends TestCase
 
     public function testUpdateIndexesDropsUnknownWhenRequested(): void
     {
-        $repository = $this->repositoryManager->get(RangoDocument::class);
+        $repository = $this->repositoryManager->get(Profile::class);
 
         $repository->updateIndexes();
         $repository->collection()->createIndex(['status' => 1], ['name' => 'custom_idx']);
