@@ -58,7 +58,11 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
         );
     }
 
-    /** @return list<Index> */
+    /**
+     * @param ReflectionClass<object> $reflection
+     *
+     * @return list<Index>
+     */
     private function indexes(ReflectionClass $reflection): array
     {
         $attributes = $reflection->getAttributes(IndexAttribute::class);

@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Tests\Integration;
 
 use Patchlevel\Hydrator\CoreExtension;
-use Patchlevel\Hydrator\HydratorBuilder;
+use Patchlevel\Hydrator\StackHydratorBuilder;
 use Patchlevel\ODM\Hydrator\ODMExtension;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Profile;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
+use Patchlevel\ODM\Tests\Integration\Fixtures\UniqueProfile;
 use Patchlevel\Rango\Client;
 use Patchlevel\Rango\Database;
+use Patchlevel\Rango\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
 use function array_map;
@@ -31,7 +33,7 @@ class RangoRepositoryTest extends TestCase
 
         $documentMetadataFactory = new AttributeDocumentMetadataFactory();
 
-        $hydrator = (new HydratorBuilder())
+        $hydrator = (new StackHydratorBuilder())
             ->useExtension(new CoreExtension())
             ->useExtension(new ODMExtension($documentMetadataFactory))
             ->build();
@@ -221,5 +223,23 @@ class RangoRepositoryTest extends TestCase
 
         self::assertContains('by_status', $indexNames);
         self::assertNotContains('custom_idx', $indexNames);
+    }
+
+    public function testUniqueIndexIsEnforced(): void
+    {
+        $repository = $this->repositoryManager->get(UniqueProfile::class);
+
+        $repository->updateIndexes();
+        $repository->collection()->insertOne([
+            '_id' => 'u-1',
+            'email' => 'rango@example.com',
+        ]);
+
+        $this->expectException(QueryException::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'u-2',
+            'email' => 'rango@example.com',
+        ]);
     }
 }

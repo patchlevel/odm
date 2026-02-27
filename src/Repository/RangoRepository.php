@@ -77,6 +77,9 @@ final readonly class RangoRepository implements Repository
         return $this->database;
     }
 
+    /**
+     * @return Collection<array<string, mixed>>
+     */
     public function collection(): Collection
     {
         return $this->database->getCollection($this->metadata->collection);
@@ -89,15 +92,12 @@ final readonly class RangoRepository implements Repository
 
     public function dropCollection(): void
     {
-        $this->database->getCollection($this->metadata->collection)->drop();
+        $this->collection()->drop();
     }
 
     public function updateIndexes(bool $dropUnknown = false): void
     {
         $collection = $this->collection();
-
-        // Ensure collection exists.
-        $collection->countDocuments();
 
         $desiredNames = [];
 
@@ -119,22 +119,17 @@ final readonly class RangoRepository implements Repository
             return;
         }
 
-        $existingNames = array_map(
-            static fn (array $index): string => $index['name'],
-            $collection->listIndexes(),
-        );
-
-        foreach ($existingNames as $name) {
-            if (in_array($name, $desiredNames, true)) {
+        foreach ($collection->listIndexes() as $index) {
+            if (in_array($index['name'], $desiredNames, true)) {
                 continue;
             }
 
             // Keep the built-in _id index.
-            if (str_ends_with($name, '_id_idx')) {
+            if (str_ends_with($index['name'], '_id_idx')) {
                 continue;
             }
 
-            $collection->dropIndex($name);
+            $collection->dropIndex($index['name']);
         }
     }
 }

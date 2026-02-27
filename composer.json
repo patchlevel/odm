@@ -1,13 +1,15 @@
 {
-  "name": "patchlevel/rango",
+  "name": "patchlevel/odm",
   "type": "library",
   "license": "MIT",
-  "description": "Rango",
+  "description": "A simple ODM for MongoDB and Postgres",
   "keywords": [
     "mongodb",
-    "postgres"
+    "postgres",
+    "rango",
+    "hydrator"
   ],
-  "homepage": "https://github.com/patchlevel/hydrator",
+  "homepage": "https://github.com/patchlevel/odm",
   "authors": [
     {
       "name": "Daniel Badura",
@@ -20,7 +22,8 @@
   ],
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0" ,
-    "ext-pdo": "*"
+    "patchlevel/hydrator": "dev-backport-stack-hydrator",
+    "patchlevel/rango": "1.0.x-dev"
   },
   "require-dev": {
     "ext-mongodb": "^2.1",

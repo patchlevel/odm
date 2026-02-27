@@ -8,12 +8,15 @@ use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\Rango\Database;
 
-final readonly class RangoRepositoryManager implements RepositoryManager
+final class RangoRepositoryManager implements RepositoryManager
 {
+    /** @var array<string, Repository<object>> */
+    private array $repositories = [];
+
     public function __construct(
-        private Database $database,
-        private DocumentMetadataFactory $metadataFactory,
-        private Hydrator $hydrator,
+        private readonly Database $database,
+        private readonly DocumentMetadataFactory $metadataFactory,
+        private readonly Hydrator $hydrator,
     ) {
     }
 
@@ -26,10 +29,16 @@ final readonly class RangoRepositoryManager implements RepositoryManager
      */
     public function get(string $documentClass): RangoRepository
     {
-        return new RangoRepository(
+        if (isset($this->repositories[$documentClass])) {
+            return $this->repositories[$documentClass];
+        }
+
+        $this->repositories[$documentClass] = new RangoRepository(
             $this->database,
             $this->metadataFactory->metadata($documentClass),
             $this->hydrator,
         );
+
+        return $this->repositories[$documentClass];
     }
 }
