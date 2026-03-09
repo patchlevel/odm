@@ -22,7 +22,7 @@
   ],
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0" ,
-    "patchlevel/hydrator": "dev-backport-stack-hydrator",
+    "patchlevel/hydrator": "^1.17.0",
     "patchlevel/rango": "1.0.x-dev"
   },
   "require-dev": {
