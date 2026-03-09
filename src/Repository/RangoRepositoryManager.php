@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Repository;
 
+use Patchlevel\Hydrator\CoreExtension;
+use Patchlevel\Hydrator\Extension;
 use Patchlevel\Hydrator\Hydrator;
+use Patchlevel\Hydrator\StackHydratorBuilder;
+use Patchlevel\ODM\Hydrator\ODMExtension;
+use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\Rango\Database;
 
@@ -40,5 +45,23 @@ final class RangoRepositoryManager implements RepositoryManager
         );
 
         return $this->repositories[$documentClass];
+    }
+
+    /**
+     * @param list<Extension> $extensions
+     */
+    public function create(Database $database, array $extensions = []): self
+    {
+        $metadataFactory = new AttributeDocumentMetadataFactory();
+
+        $builder = (new StackHydratorBuilder())
+            ->useExtension(new CoreExtension())
+            ->useExtension(new ODMExtension($metadataFactory));
+
+        foreach ($extensions as $extension) {
+            $builder->useExtension($extension);
+        }
+
+        return new self($database, $metadataFactory, $builder->build());
     }
 }

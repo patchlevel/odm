@@ -79,16 +79,11 @@ enum Status: string
 }
 
 $client = new Client($_ENV['POSTGRES_URI']);
-$database = $client->selectDatabase('patchlevel');
 
-$metadataFactory = new AttributeDocumentMetadataFactory();
+$manager = RangoRepositoryManager::create(
+    $client->selectDatabase('patchlevel')
+);
 
-$hydrator = (new HydratorBuilder())
-    ->useExtension(new CoreExtension())
-    ->useExtension(new ODMExtension($metadataFactory))
-    ->build();
-
-$manager = new RangoRepositoryManager($database, $metadataFactory, $hydrator);
 $repository = $manager->get(Profile::class);
 
 $repository->save(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
