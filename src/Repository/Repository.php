@@ -8,19 +8,36 @@ namespace Patchlevel\ODM\Repository;
 interface Repository
 {
     /** @param T $object */
-    public function save(object $object): void;
+    public function persist(object $object): void;
 
-    /** @return T */
-    public function load(string $id): object;
+    /** @return T|null */
+    public function find(string $id): object|null;
 
     public function remove(string $id): void;
 
+    /** @return iterable<T> */
+    public function findAll(): iterable;
+
     /**
-     * @param array<string, mixed> $filter
+     * @param array<string, mixed>             $filter
+     * @param array<string, 'asc'|'desc'>|null $orderBy
      *
      * @return iterable<T>
      */
-    public function find(array $filter = []): iterable;
+    public function findBy(
+        array $filter,
+        array|null $orderBy = null,
+        int|null $limit = null,
+        int|null $offset = null,
+    ): iterable;
+
+    /**
+     * @param array<string, mixed>             $filter
+     * @param array<string, 'asc'|'desc'>|null $orderBy
+     *
+     * @return T|null
+     */
+    public function findOneBy(array $filter = [], array|null $orderBy = null): object|null;
 
     public function count(): int;
 

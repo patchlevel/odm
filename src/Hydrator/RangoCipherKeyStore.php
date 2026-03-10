@@ -59,9 +59,7 @@ final readonly class RangoCipherKeyStore implements CipherKeyStore
         $this->collection()->deleteOne(['_id' => $id]);
     }
 
-    /**
-     * @return Collection<CipherKeyData>
-     */
+    /** @return Collection<CipherKeyData> */
     private function collection(): Collection
     {
         return $this->database->selectCollection($this->collection);
@@ -83,10 +81,7 @@ final readonly class RangoCipherKeyStore implements CipherKeyStore
         $this->collection()->deleteMany(['subject_id' => $subjectId]);
     }
 
-    /**
-     * @param CipherKeyData $data
-     * @return CipherKey
-     */
+    /** @param CipherKeyData $data */
     private function hydrate(array $data): CipherKey
     {
         return new CipherKey(

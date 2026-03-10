@@ -47,9 +47,7 @@ final class RangoRepositoryManager implements RepositoryManager
         return $this->repositories[$documentClass];
     }
 
-    /**
-     * @param list<Extension> $extensions
-     */
+    /** @param list<Extension> $extensions */
     public function create(Database $database, array $extensions = []): self
     {
         $metadataFactory = new AttributeDocumentMetadataFactory();

@@ -57,7 +57,7 @@ class RangoRepositoryTest extends TestCase
         $repository = $this->repositoryManager->get(Profile::class);
 
         $document = new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]);
-        $repository->save($document);
+        $repository->persist($document);
 
         $raw = $repository->collection()->findOne(['_id' => 'r-1']);
 
@@ -78,7 +78,7 @@ class RangoRepositoryTest extends TestCase
             'status' => 'active',
             'skills' => ['php'],
         ]);
-        $loaded = $repository->load('r-1');
+        $loaded = $repository->find('r-1');
 
         self::assertEquals(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]), $loaded);
     }
@@ -144,10 +144,144 @@ class RangoRepositoryTest extends TestCase
             'skills' => ['tracking'],
         ]);
 
-        $results = iterator_to_array($repository->find(['status' => 'active']), false);
+        $results = iterator_to_array($repository->findBy(['status' => 'active']), false);
 
         self::assertCount(2, $results);
         self::assertSame(['r-1', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));
+    }
+
+    public function testFindWithLimit(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['tracking'],
+        ]);
+
+        $results = iterator_to_array($repository->findBy([], limit: 2), false);
+
+        self::assertCount(2, $results);
+        self::assertSame(['r-1', 'r-2'], array_map(static fn (Profile $doc) => $doc->id, $results));
+    }
+
+    public function testFindWithOffset(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['tracking'],
+        ]);
+
+        $results = iterator_to_array($repository->findBy([], offset: 1), false);
+
+        self::assertCount(2, $results);
+        self::assertSame(['r-2', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));
+    }
+
+    public function testFindWithSort(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['tracking'],
+        ]);
+
+        $results = iterator_to_array($repository->findBy([], orderBy: ['name' => 'asc']), false);
+
+        self::assertCount(3, $results);
+        self::assertSame(['r-2', 'r-1', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));
+    }
+
+    public function testFindOne(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+
+        $result = $repository->findOneBy(['name' => 'Beans']);
+
+        self::assertNotNull($result);
+        self::assertSame('r-2', $result->id);
+    }
+
+    public function testNotFindOne(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+
+        $result = $repository->findOneBy(['name' => 'Foo']);
+
+        self::assertNull($result);
     }
 
     public function testRemove(): void
@@ -178,7 +312,7 @@ class RangoRepositoryTest extends TestCase
     public function testDropCollection(): void
     {
         $repository = $this->repositoryManager->get(Profile::class);
-        $repository->save(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
+        $repository->persist(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
 
         $repository->dropCollection();
 

@@ -28,17 +28,25 @@ final readonly class RangoRepository implements Repository
     }
 
     /** @param T $object */
-    public function save(object $object): void
+    public function persist(object $object): void
     {
+        if ($object::class !== $this->metadata->className) {
+            throw new WrongClass($this->metadata->className, $object::class);
+        }
+
         $data = $this->hydrator->extract($object);
 
         $this->collection()->insertOne($data);
     }
 
-    /** @return T */
-    public function load(string $id): object
+    /** @return T|null */
+    public function find(string $id): object|null
     {
         $data = $this->collection()->findOne(['_id' => $id]);
+
+        if ($data === null) {
+            return null;
+        }
 
         return $this->hydrator->hydrate($this->metadata->className, $data);
     }
@@ -48,18 +56,55 @@ final readonly class RangoRepository implements Repository
         $this->collection()->deleteOne(['_id' => $id]);
     }
 
-    /**
-     * @param array<string, mixed> $filter
-     *
-     * @return iterable<T>
-     */
-    public function find(array $filter = []): iterable
+    public function findAll(): iterable
     {
-        $cursor = $this->collection()->find($filter);
+        $cursor = $this->collection()->find();
 
         foreach ($cursor as $document) {
             yield $this->hydrator->hydrate($this->metadata->className, $document);
         }
+    }
+
+    public function findBy(array $filter, array|null $orderBy = null, int|null $limit = null, int|null $offset = null): iterable
+    {
+        $options = [];
+
+        if ($limit !== null) {
+            $options['limit'] = $limit;
+        }
+
+        if ($offset !== null) {
+            $options['skip'] = $offset;
+        }
+
+        if ($orderBy !== null) {
+            $options['sort'] = array_map(
+                static fn ($direction) => $direction === 'desc' ? -1 : 1,
+                $orderBy,
+            );
+        }
+
+        $cursor = $this->collection()->find($filter, $options);
+
+        foreach ($cursor as $document) {
+            yield $this->hydrator->hydrate($this->metadata->className, $document);
+        }
+    }
+
+    public function findOneBy(array $filter = [], array|null $orderBy = null): object|null
+    {
+        $options = ['limit' => 1];
+
+        if ($orderBy !== null) {
+            $options['sort'] = array_map(
+                static fn ($direction) => $direction === 'desc' ? -1 : 1,
+                $orderBy,
+            );
+        }
+
+        $data = $this->collection()->findOne($filter, $options);
+
+        return $data ? $this->hydrator->hydrate($this->metadata->className, $data) : null;
     }
 
     public function count(): int
@@ -77,9 +122,7 @@ final readonly class RangoRepository implements Repository
         return $this->database;
     }
 
-    /**
-     * @return Collection<array<string, mixed>>
-     */
+    /** @return Collection<array<string, mixed>> */
     public function collection(): Collection
     {
         return $this->database->getCollection($this->metadata->collection);

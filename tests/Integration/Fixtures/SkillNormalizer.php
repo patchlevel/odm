@@ -8,6 +8,8 @@ use Attribute;
 use Patchlevel\Hydrator\Normalizer\InvalidType;
 use Patchlevel\Hydrator\Normalizer\NormalizerWithContext;
 
+use function is_string;
+
 #[Attribute(Attribute::TARGET_CLASS)]
 final class SkillNormalizer implements NormalizerWithContext
 {
