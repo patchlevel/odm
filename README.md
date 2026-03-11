@@ -116,8 +116,8 @@ Now you can use the repository manager to access your documents.
 $repository = $manager->get(Profile::class);
 
 $repository->persist(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
-$repository->persist(new Profile('r-2', 'Foo', Status::ACTIVE, [new Skill('php')]));
-$repository->persist(new Profile('r-3', 'Bar', Status::ACTIVE, [new Skill('php')]));
+$repository->persist(new Profile('r-2', 'Foo', Status::ACTIVE, [new Skill('node'), new Skill('js')]));
+$repository->persist(new Profile('r-3', 'Bar', Status::INACTIVE, [new Skill('mongodb')]));
 
 $profiles = $repository->findBy(
     filter: ['status' => Status::ACTIVE->value],
