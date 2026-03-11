@@ -45,6 +45,8 @@ Internally the ODM uses:
 
 ## 🚦 Quick Start
 
+Define your documents and indexes using PHP attributes.
+
 ```php
 use Patchlevel\ODM\Attribute\Document;
 use Patchlevel\ODM\Attribute\Id;
@@ -52,12 +54,12 @@ use Patchlevel\ODM\Attribute\Index;
 
 #[Document('profiles')]
 #[Index('by_status', ['status' => 'asc'])]
-final readonly class Profile
+final class Profile
 {
     /** @param list<Skill> $skills */
     public function __construct(
         #[Id]
-        public string $id,
+        public readonly string $id,
         public string $name,
         public Status $status,
         public array $skills,
@@ -80,7 +82,7 @@ enum Status: string
 }
 ```
 
-### PostgreSQL (via Rango)
+### Setup PostgreSQL (via Rango)
 
 ```php
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
@@ -91,14 +93,9 @@ $client = new Client($_ENV['POSTGRES_URI']);
 $manager = RangoRepositoryManager::create(
     $client->selectDatabase('patchlevel')
 );
-
-$repository = $manager->get(Profile::class);
-
-$repository->persist(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
-$profile = $repository->find('r-1');
 ```
 
-### MongoDB
+### Setup MongoDB
 
 ```php
 use MongoDB\Client;
@@ -109,11 +106,31 @@ $client = new Client($_ENV['MONGODB_URI']);
 $manager = MongoDBRepositoryManager::create(
     $client->selectDatabase('patchlevel')
 );
+```
 
+### Usage
+
+Now you can use the repository manager to access your documents.
+
+```php
 $repository = $manager->get(Profile::class);
 
 $repository->persist(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
-$profile = $repository->find('r-1');
+$repository->persist(new Profile('r-2', 'Foo', Status::ACTIVE, [new Skill('php')]));
+$repository->persist(new Profile('r-3', 'Bar', Status::ACTIVE, [new Skill('php')]));
+
+$profiles = $repository->findBy(
+    filter: ['status' => Status::ACTIVE->value],
+    sort: ['name' => 'asc'],
+    limit: 10,
+    offset: 0
+);
+
+$profile = $repository->find('r-2');
+$profile->name = 'New Foo';
+$repository->persist($profile);
+
+$repository->remove('r-3');
 ```
 
 ## 🏗️ Design differences compared to Doctrine ODM
