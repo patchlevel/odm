@@ -1,7 +1,7 @@
 # Patchlevel ODM
 
-Patchlevel ODM is a lightweight **Object Document Mapper (ODM)** for PHP that works with **MongoDB** and **PostgreSQL (via patchlevel/rango)**.
-It is built on top of our superfast **`patchlevel/hydrator`**, providing a simple attribute-based mapping layer and
+Patchlevel ODM is a lightweight **Object Document Mapper (ODM)** for PHP that works with **MongoDB** and **PostgreSQL (via [patchlevel/rango](https://github.com/patchlevel/rango/))**.
+It is built on top of our superfast **[patchlevel/hydrator](https://github.com/patchlevel/hydrator/)**, providing a simple attribute-based mapping layer and
 enterprise-grade features like cyptography.
 
 ## 🚀 Why Patchlevel ODM?
@@ -9,14 +9,14 @@ enterprise-grade features like cyptography.
 * **Postgres and MongoDB support** – Use the same ODM for both Postgres and MongoDB, with a consistent API.
 * **Attribute-based Mapping** – Define documents and indexes using modern PHP attributes.
 * **No Unit of Work** – Patchlevel ODM does not use a Unit of Work, giving you more control over when changes are persisted.
-* **Built on Patchlevel Hydrator** – Benefit from the performance and extensibility (like crypto shredding) of our powerful hydrator library.
+* **Built on Patchlevel Hydrator** – Benefit from the performance and extensibility (like [crypto shredding](https://github.com/patchlevel/hydrator/#cryptography)) of our powerful [hydrator library](https://github.com/patchlevel/hydrator/).
 
 ## 📦 Installation
 
 You can install Patchlevel ODM using Composer. 
 Depending on your database choice, you will need to require the appropriate packages.
 
-### PostgreSQL (via Rango)
+### PostgreSQL (via [Rango](https://github.com/patchlevel/rango/))
 
 ```bash
 composer require patchlevel/odm patchlevel/rango
@@ -39,9 +39,9 @@ Patchlevel ODM maps PHP objects to document storage.
 
 Internally the ODM uses:
 
-* **`patchlevel/rango`** as the database abstraction layer for PostgreSQL
-* **`mongodb/mongodb`** as the database abstraction layer for MongoDB
-* **`patchlevel/hydrator`** for object mapping and normalization
+* **[patchlevel/rango](https://github.com/patchlevel/rango/)** as the database abstraction layer for PostgreSQL
+* **[mongodb/mongodb](https://github.com/mongodb/mongo-php-library)** as the database abstraction layer for MongoDB
+* **[patchlevel/hydrator](https://github.com/patchlevel/hydrator/)** for object mapping and normalization
 
 ## 🚦 Quick Start
 
@@ -82,7 +82,7 @@ enum Status: string
 }
 ```
 
-### Setup PostgreSQL (via Rango)
+### Setup PostgreSQL (via [Rango](https://github.com/patchlevel/rango/))
 
 ```php
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
