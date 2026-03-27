@@ -167,8 +167,8 @@ final readonly class RangoRepository implements Repository
                 continue;
             }
 
-            // Keep the built-in _id index.
-            if (str_ends_with($index['name'], '_id_idx')) {
+            // Keep primary key index.
+            if (str_ends_with($index['name'], '_pkey')) {
                 continue;
             }
 

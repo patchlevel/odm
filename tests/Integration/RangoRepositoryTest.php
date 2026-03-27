@@ -325,8 +325,8 @@ class RangoRepositoryTest extends TestCase
 
         $repository->createCollection();
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
     }
@@ -337,8 +337,8 @@ class RangoRepositoryTest extends TestCase
 
         $repository->updateIndexes();
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
     }
@@ -352,8 +352,8 @@ class RangoRepositoryTest extends TestCase
 
         $repository->updateIndexes(true);
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
         self::assertNotContains('custom_idx', $indexNames);

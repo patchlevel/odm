@@ -43,10 +43,10 @@ final readonly class MongoDBCipherKeyStore implements CipherKeyStore
         return $this->hydrate($data);
     }
 
-    public function store(string $id, CipherKey $key): void
+    public function store(CipherKey $key): void
     {
         $this->collection()->insertOne([
-            '_id' => $id,
+            '_id' => $key->id,
             'subject_id' => $key->subjectId,
             'key' => base64_encode($key->key),
             'method' => $key->method,

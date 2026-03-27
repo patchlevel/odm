@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "40b065346b2b6a06340cb3ba42230fdd",
+    "content-hash": "03557a310900052b5fbe79284d570167",
     "packages": [
         {
             "name": "patchlevel/hydrator",
-            "version": "1.17.0",
+            "version": "1.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/hydrator.git",
-                "reference": "9c10c8781000abee812448da3f61ba12a005646f"
+                "reference": "fb802134da1eb6294a4358b1f55dbe3621104d80"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/9c10c8781000abee812448da3f61ba12a005646f",
-                "reference": "9c10c8781000abee812448da3f61ba12a005646f",
+                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/fb802134da1eb6294a4358b1f55dbe3621104d80",
+                "reference": "fb802134da1eb6294a4358b1f55dbe3621104d80",
                 "shasum": ""
             },
             "require": {
@@ -66,72 +66,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/hydrator/issues",
-                "source": "https://github.com/patchlevel/hydrator/tree/1.17.0"
+                "source": "https://github.com/patchlevel/hydrator/tree/1.18.0"
             },
-            "time": "2026-03-09T15:44:23+00:00"
-        },
-        {
-            "name": "patchlevel/rango",
-            "version": "1.0.x-dev",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/patchlevel/rango.git",
-                "reference": "dcea1fd5350ccf5d1a0ac08a795e91a95e1fda42"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/rango/zipball/dcea1fd5350ccf5d1a0ac08a795e91a95e1fda42",
-                "reference": "dcea1fd5350ccf5d1a0ac08a795e91a95e1fda42",
-                "shasum": ""
-            },
-            "require": {
-                "ext-pdo": "*",
-                "php": "~8.3.0 || ~8.4.0 || ~8.5.0"
-            },
-            "require-dev": {
-                "ext-mongodb": "^2.1",
-                "infection/infection": "^0.31.9",
-                "mongodb/mongodb": "^2.1",
-                "patchlevel/coding-standard": "^1.3.0",
-                "phpat/phpat": "^0.12.0",
-                "phpbench/phpbench": "^1.2.15",
-                "phpstan/phpstan": "^2.1.32",
-                "phpstan/phpstan-phpunit": "^2.0.8",
-                "phpunit/phpunit": "^11.5.17",
-                "symfony/var-dumper": "^6.4.0 || ^7.0.0 || ^8.0.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Patchlevel\\Rango\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Badura",
-                    "email": "daniel.badura@patchlevel.de"
-                },
-                {
-                    "name": "David Badura",
-                    "email": "david.badura@patchlevel.de"
-                }
-            ],
-            "description": "Rango",
-            "homepage": "https://github.com/patchlevel/hydrator",
-            "keywords": [
-                "mongodb",
-                "postgres"
-            ],
-            "support": {
-                "issues": "https://github.com/patchlevel/rango/issues",
-                "source": "https://github.com/patchlevel/rango/tree/1.0.x"
-            },
-            "time": "2026-02-26T16:50:36+00:00"
+            "time": "2026-03-13T17:09:15+00:00"
         },
         {
             "name": "psr/cache",
@@ -1963,6 +1900,68 @@
             "time": "2023-06-02T10:05:08+00:00"
         },
         {
+            "name": "patchlevel/rango",
+            "version": "1.0.0-alpha.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/patchlevel/rango.git",
+                "reference": "f5365547aa559dd01f94aad3f773cd89172d02b1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/patchlevel/rango/zipball/f5365547aa559dd01f94aad3f773cd89172d02b1",
+                "reference": "f5365547aa559dd01f94aad3f773cd89172d02b1",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": "~8.3.0 || ~8.4.0 || ~8.5.0"
+            },
+            "require-dev": {
+                "ext-mongodb": "^2.1",
+                "infection/infection": "^0.31.9",
+                "mongodb/mongodb": "^2.1",
+                "patchlevel/coding-standard": "^1.3.0",
+                "phpat/phpat": "^0.12.0",
+                "phpbench/phpbench": "^1.2.15",
+                "phpstan/phpstan": "^2.1.32",
+                "phpstan/phpstan-phpunit": "^2.0.8",
+                "phpunit/phpunit": "^11.5.17",
+                "symfony/var-dumper": "^6.4.0 || ^7.0.0 || ^8.0.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Patchlevel\\Rango\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Badura",
+                    "email": "daniel.badura@patchlevel.de"
+                },
+                {
+                    "name": "David Badura",
+                    "email": "david.badura@patchlevel.de"
+                }
+            ],
+            "description": "Rango",
+            "homepage": "https://github.com/patchlevel/hydrator",
+            "keywords": [
+                "mongodb",
+                "postgres"
+            ],
+            "support": {
+                "issues": "https://github.com/patchlevel/rango/issues",
+                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.2"
+            },
+            "time": "2026-03-27T15:23:40+00:00"
+        },
+        {
             "name": "phar-io/manifest",
             "version": "2.0.4",
             "source": {
@@ -2082,16 +2081,16 @@
         },
         {
             "name": "phpat/phpat",
-            "version": "0.12.3",
+            "version": "0.12.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/carlosas/phpat.git",
-                "reference": "2412a8959254a076e751498cbba8cf29406e0cf4"
+                "reference": "5319264270c335f548451209bb0f32b55aa59924"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/carlosas/phpat/zipball/2412a8959254a076e751498cbba8cf29406e0cf4",
-                "reference": "2412a8959254a076e751498cbba8cf29406e0cf4",
+                "url": "https://api.github.com/repos/carlosas/phpat/zipball/5319264270c335f548451209bb0f32b55aa59924",
+                "reference": "5319264270c335f548451209bb0f32b55aa59924",
                 "shasum": ""
             },
             "require": {
@@ -2133,9 +2132,9 @@
             "description": "PHP Architecture Tester",
             "support": {
                 "issues": "https://github.com/carlosas/phpat/issues",
-                "source": "https://github.com/carlosas/phpat/tree/0.12.3"
+                "source": "https://github.com/carlosas/phpat/tree/0.12.4"
             },
-            "time": "2026-02-20T11:15:22+00:00"
+            "time": "2026-03-17T16:47:43+00:00"
         },
         {
             "name": "phpbench/container",
@@ -2190,16 +2189,16 @@
         },
         {
             "name": "phpbench/phpbench",
-            "version": "1.5.1",
+            "version": "1.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpbench/phpbench.git",
-                "reference": "9a28fd0833f11171b949843c6fd663eb69b6d14c"
+                "reference": "661c8c6abbc7734986cf7bc6062c237fbb450461"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpbench/phpbench/zipball/9a28fd0833f11171b949843c6fd663eb69b6d14c",
-                "reference": "9a28fd0833f11171b949843c6fd663eb69b6d14c",
+                "url": "https://api.github.com/repos/phpbench/phpbench/zipball/661c8c6abbc7734986cf7bc6062c237fbb450461",
+                "reference": "661c8c6abbc7734986cf7bc6062c237fbb450461",
                 "shasum": ""
             },
             "require": {
@@ -2277,7 +2276,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpbench/phpbench/issues",
-                "source": "https://github.com/phpbench/phpbench/tree/1.5.1"
+                "source": "https://github.com/phpbench/phpbench/tree/1.6.1"
             },
             "funding": [
                 {
@@ -2285,7 +2284,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-05T08:18:58+00:00"
+            "time": "2026-03-22T10:27:20+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -2336,11 +2335,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.1.40",
+            "version": "2.1.44",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/9b2c7aeb83a75d8680ea5e7c9b7fca88052b766b",
-                "reference": "9b2c7aeb83a75d8680ea5e7c9b7fca88052b766b",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4a88c083c668b2c364a425c9b3171b2d9ea5d218",
+                "reference": "4a88c083c668b2c364a425c9b3171b2d9ea5d218",
                 "shasum": ""
             },
             "require": {
@@ -2385,7 +2384,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-23T15:04:35+00:00"
+            "time": "2026-03-25T17:34:21+00:00"
         },
         {
             "name": "phpstan/phpstan-phpunit",
@@ -5940,7 +5939,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "patchlevel/rango": 20
+        "patchlevel/rango": 15
     },
     "prefer-stable": false,
     "prefer-lowest": false,

@@ -21,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 use function array_map;
 use function getenv;
 use function iterator_to_array;
+use function is_array;
 
 class MongoDBRepositoryTest extends TestCase
 {
@@ -39,6 +40,7 @@ class MongoDBRepositoryTest extends TestCase
             ->build();
 
         $this->database = $client->selectDatabase('patchlevel');
+        $this->database->drop();
 
         $this->repositoryManager = new MongoDBRepositoryManager(
             $this->database,
@@ -62,10 +64,16 @@ class MongoDBRepositoryTest extends TestCase
         $raw = $repository->collection()->findOne(['_id' => 'r-1']);
 
         self::assertNotNull($raw);
-        self::assertEquals(
-            ['_id' => 'r-1', 'name' => 'Rango', 'status' => 'active', 'skills' => ['php']],
-            $raw,
-        );
+        self::assertSame('r-1', $raw['_id']);
+        self::assertSame('Rango', $raw['name']);
+        self::assertSame('active', $raw['status']);
+
+        $skills = $raw['skills'];
+        if (! is_array($skills)) {
+            $skills = iterator_to_array($skills);
+        }
+
+        self::assertSame(['php'], $skills);
     }
 
     public function testLoad(): void
@@ -325,8 +333,8 @@ class MongoDBRepositoryTest extends TestCase
 
         $repository->createCollection();
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
     }
@@ -337,8 +345,8 @@ class MongoDBRepositoryTest extends TestCase
 
         $repository->updateIndexes();
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
     }
@@ -348,12 +356,12 @@ class MongoDBRepositoryTest extends TestCase
         $repository = $this->repositoryManager->get(Profile::class);
 
         $repository->updateIndexes();
-        $repository->collection()->createIndex(['status' => 1], ['name' => 'custom_idx']);
+        $repository->collection()->createIndex(['name' => 1], ['name' => 'custom_idx']);
 
         $repository->updateIndexes(true);
 
-        $indexes = $repository->collection()->listIndexes();
-        $indexNames = array_map(static fn (array $index): string => $index['name'], $indexes);
+        $indexes = iterator_to_array($repository->collection()->listIndexes(), false);
+        $indexNames = array_map(static fn ($index): string => $index['name'], $indexes);
 
         self::assertContains('by_status', $indexNames);
         self::assertNotContains('custom_idx', $indexNames);

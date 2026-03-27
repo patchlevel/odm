@@ -11,6 +11,7 @@ use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_map;
 use function in_array;
+use function iterator_to_array;
 use function str_ends_with;
 
 /**
@@ -42,7 +43,9 @@ final readonly class MongoDBRepository implements Repository
     /** @return T|null */
     public function find(string $id): object|null
     {
-        $data = $this->collection()->findOne(['_id' => $id]);
+        $data = $this->collection()->findOne(['_id' => $id], [
+            'typeMap' => ['root' => 'array', 'document' => 'array'],
+        ]);
 
         if ($data === null) {
             return null;
@@ -58,7 +61,9 @@ final readonly class MongoDBRepository implements Repository
 
     public function findAll(): iterable
     {
-        $cursor = $this->collection()->find();
+        $cursor = $this->collection()->find([], [
+            'typeMap' => ['root' => 'array', 'document' => 'array'],
+        ]);
 
         foreach ($cursor as $document) {
             yield $this->hydrator->hydrate($this->metadata->className, $document);
@@ -84,6 +89,8 @@ final readonly class MongoDBRepository implements Repository
             );
         }
 
+        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
+
         $cursor = $this->collection()->find($filter, $options);
 
         foreach ($cursor as $document) {
@@ -93,7 +100,10 @@ final readonly class MongoDBRepository implements Repository
 
     public function findOneBy(array $filter = [], array|null $orderBy = null): object|null
     {
-        $options = ['limit' => 1];
+        $options = [
+            'limit' => 1,
+            'typeMap' => ['root' => 'array', 'document' => 'array'],
+        ];
 
         if ($orderBy !== null) {
             $options['sort'] = array_map(
@@ -143,9 +153,19 @@ final readonly class MongoDBRepository implements Repository
     {
         $collection = $this->collection();
 
+        $existingIndexes = [];
+        foreach (iterator_to_array($collection->listIndexes()) as $index) {
+            $existingIndexes[$index['name']] = true;
+        }
+
         $desiredNames = [];
 
         foreach ($this->metadata->indexes as $index) {
+            if (isset($existingIndexes[$index->name])) {
+                $desiredNames[] = $index->name;
+                continue;
+            }
+
             $keys = array_map(
                 static fn ($direction) => $direction === 'desc' ? -1 : 1,
                 $index->keys,
@@ -163,7 +183,7 @@ final readonly class MongoDBRepository implements Repository
             return;
         }
 
-        foreach ($collection->listIndexes() as $index) {
+        foreach (iterator_to_array($collection->listIndexes()) as $index) {
             if (in_array($index['name'], $desiredNames, true)) {
                 continue;
             }
