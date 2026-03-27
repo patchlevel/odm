@@ -141,6 +141,12 @@ final readonly class RangoRepository implements Repository
         return $this->database->getCollection($this->metadata->collection);
     }
 
+    /** @return DocumentMetadata<T> */
+    public function metadata(): DocumentMetadata
+    {
+        return $this->metadata;
+    }
+
     public function createCollection(): void
     {
         $this->updateIndexes();

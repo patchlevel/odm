@@ -51,7 +51,7 @@ final class RangoRepositoryManager implements RepositoryManager
     }
 
     /** @param list<Extension> $extensions */
-    public function create(Client $client, array $extensions = []): self
+    public static function create(Client $client, array $extensions = []): self
     {
         $metadataFactory = new AttributeDocumentMetadataFactory();
 

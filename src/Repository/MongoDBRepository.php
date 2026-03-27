@@ -151,6 +151,12 @@ final readonly class MongoDBRepository implements Repository
         return $this->database->selectCollection($this->metadata->collection);
     }
 
+    /** @return DocumentMetadata<T> */
+    public function metadata(): DocumentMetadata
+    {
+        return $this->metadata;
+    }
+
     public function createCollection(): void
     {
         $this->database->createCollection($this->metadata->collection);
