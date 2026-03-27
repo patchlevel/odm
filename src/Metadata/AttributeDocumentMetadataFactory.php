@@ -29,7 +29,10 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
             throw new ClassIsNotAnDocument($className);
         }
 
-        $collection = $attributes[0]->newInstance()->collection;
+        $attribute = $attributes[0]->newInstance();
+
+        $collection = $attribute->collection;
+        $database = $attribute->database;
         $idProperty = null;
 
         foreach ($reflection->getProperties() as $reflectionProperty) {
@@ -52,6 +55,7 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
 
         return new DocumentMetadata(
             $className,
+            $database,
             $collection,
             $idProperty,
             $this->indexes($reflection),

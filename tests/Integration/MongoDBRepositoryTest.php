@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Tests\Integration;
 
 use MongoDB\Client;
-use MongoDB\Database;
 use MongoDB\Driver\Exception\BulkWriteException;
 use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\StackHydratorBuilder;
@@ -20,17 +19,17 @@ use PHPUnit\Framework\TestCase;
 
 use function array_map;
 use function getenv;
-use function iterator_to_array;
 use function is_array;
+use function iterator_to_array;
 
 class MongoDBRepositoryTest extends TestCase
 {
     protected MongoDBRepositoryManager $repositoryManager;
-    private Database $database;
+    private Client $client;
 
     public function setUp(): void
     {
-        $client = new Client(getenv('MONGODB_URI'));
+        $this->client = new Client(getenv('MONGODB_URI'));
 
         $documentMetadataFactory = new AttributeDocumentMetadataFactory();
 
@@ -39,19 +38,19 @@ class MongoDBRepositoryTest extends TestCase
             ->useExtension(new ODMExtension($documentMetadataFactory))
             ->build();
 
-        $this->database = $client->selectDatabase('patchlevel');
-        $this->database->drop();
+        $this->client->dropDatabase('patchlevel');
 
         $this->repositoryManager = new MongoDBRepositoryManager(
-            $this->database,
+            $this->client,
             $documentMetadataFactory,
             $hydrator,
+            'patchlevel',
         );
     }
 
     protected function tearDown(): void
     {
-        $this->database->drop();
+        $this->client->dropDatabase('patchlevel');
     }
 
     public function testSave(): void

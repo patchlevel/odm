@@ -15,6 +15,7 @@ final readonly class DocumentMetadata
      */
     public function __construct(
         public string $className,
+        public string|null $database,
         public string $collection,
         public string $idProperty,
         public array $indexes = [],

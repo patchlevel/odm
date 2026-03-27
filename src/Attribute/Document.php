@@ -11,6 +11,7 @@ final readonly class Document
 {
     public function __construct(
         public string $collection,
+        public string|null $database = null,
     ) {
     }
 }

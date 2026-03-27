@@ -11,7 +11,7 @@ use Patchlevel\Hydrator\StackHydratorBuilder;
 use Patchlevel\ODM\Hydrator\ODMExtension;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
-use Patchlevel\Rango\Database;
+use Patchlevel\Rango\Client;
 
 final class RangoRepositoryManager implements RepositoryManager
 {
@@ -19,9 +19,10 @@ final class RangoRepositoryManager implements RepositoryManager
     private array $repositories = [];
 
     public function __construct(
-        private readonly Database $database,
+        private readonly Client $client,
         private readonly DocumentMetadataFactory $metadataFactory,
         private readonly Hydrator $hydrator,
+        private readonly string $defaultDatabase = 'public',
     ) {
     }
 
@@ -38,8 +39,10 @@ final class RangoRepositoryManager implements RepositoryManager
             return $this->repositories[$documentClass];
         }
 
+        $metadata = $this->metadataFactory->metadata($documentClass);
+
         $this->repositories[$documentClass] = new RangoRepository(
-            $this->database,
+            $this->client->selectDatabase($metadata->database ?: $this->defaultDatabase),
             $this->metadataFactory->metadata($documentClass),
             $this->hydrator,
         );
@@ -48,7 +51,7 @@ final class RangoRepositoryManager implements RepositoryManager
     }
 
     /** @param list<Extension> $extensions */
-    public function create(Database $database, array $extensions = []): self
+    public function create(Client $client, array $extensions = []): self
     {
         $metadataFactory = new AttributeDocumentMetadataFactory();
 
@@ -60,6 +63,6 @@ final class RangoRepositoryManager implements RepositoryManager
             $builder->useExtension($extension);
         }
 
-        return new self($database, $metadataFactory, $builder->build());
+        return new self($client, $metadataFactory, $builder->build());
     }
 }

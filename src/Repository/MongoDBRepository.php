@@ -59,6 +59,7 @@ final readonly class MongoDBRepository implements Repository
         $this->collection()->deleteOne(['_id' => $id]);
     }
 
+    /** @return iterable<T> */
     public function findAll(): iterable
     {
         $cursor = $this->collection()->find([], [
@@ -70,6 +71,12 @@ final readonly class MongoDBRepository implements Repository
         }
     }
 
+    /**
+     * @param array<string, mixed>             $filter
+     * @param array<string, 'asc'|'desc'>|null $orderBy
+     *
+     * @return iterable<T>
+     */
     public function findBy(array $filter, array|null $orderBy = null, int|null $limit = null, int|null $offset = null): iterable
     {
         $options = [];
@@ -98,6 +105,12 @@ final readonly class MongoDBRepository implements Repository
         }
     }
 
+    /**
+     * @param array<string, mixed>             $filter
+     * @param array<string, 'asc'|'desc'>|null $orderBy
+     *
+     * @return T|null
+     */
     public function findOneBy(array $filter = [], array|null $orderBy = null): object|null
     {
         $options = [

@@ -14,7 +14,6 @@ use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
 use Patchlevel\ODM\Tests\Integration\Fixtures\UniqueProfile;
 use Patchlevel\Rango\Client;
-use Patchlevel\Rango\Database;
 use Patchlevel\Rango\Exception\QueryException;
 use PHPUnit\Framework\TestCase;
 
@@ -25,11 +24,17 @@ use function iterator_to_array;
 class RangoRepositoryTest extends TestCase
 {
     protected RangoRepositoryManager $repositoryManager;
-    private Database $database;
+    private Client $client;
 
     public function setUp(): void
     {
-        $client = new Client(getenv('POSTGRES_URI'));
+        $uri = getenv('POSTGRES_URI');
+
+        if (!$uri) {
+            self::markTestSkipped('POSTGRES_URI is not set');
+        }
+
+        $this->client = new Client($uri);
 
         $documentMetadataFactory = new AttributeDocumentMetadataFactory();
 
@@ -38,18 +43,19 @@ class RangoRepositoryTest extends TestCase
             ->useExtension(new ODMExtension($documentMetadataFactory))
             ->build();
 
-        $this->database = $client->selectDatabase('patchlevel');
+        $this->client->dropDatabase('patchlevel');
 
         $this->repositoryManager = new RangoRepositoryManager(
-            $this->database,
+            $this->client,
             $documentMetadataFactory,
             $hydrator,
+            'patchlevel',
         );
     }
 
     protected function tearDown(): void
     {
-        $this->database->drop();
+        $this->client->dropDatabase('patchlevel');
     }
 
     public function testSave(): void

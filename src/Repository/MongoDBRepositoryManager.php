@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Repository;
 
-use MongoDB\Database;
+use MongoDB\Client;
 use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\Extension;
 use Patchlevel\Hydrator\Hydrator;
@@ -19,9 +19,10 @@ final class MongoDBRepositoryManager implements RepositoryManager
     private array $repositories = [];
 
     public function __construct(
-        private readonly Database $database,
+        private readonly Client $client,
         private readonly DocumentMetadataFactory $metadataFactory,
         private readonly Hydrator $hydrator,
+        private readonly string $defaultDatabase = 'default',
     ) {
     }
 
@@ -38,9 +39,11 @@ final class MongoDBRepositoryManager implements RepositoryManager
             return $this->repositories[$documentClass];
         }
 
+        $metadata = $this->metadataFactory->metadata($documentClass);
+
         $this->repositories[$documentClass] = new MongoDBRepository(
-            $this->database,
-            $this->metadataFactory->metadata($documentClass),
+            $this->client->getDatabase($metadata->database ?: $this->defaultDatabase),
+            $metadata,
             $this->hydrator,
         );
 
@@ -48,7 +51,7 @@ final class MongoDBRepositoryManager implements RepositoryManager
     }
 
     /** @param list<Extension> $extensions */
-    public static function create(Database $database, array $extensions = []): self
+    public static function create(Client $client, array $extensions = []): self
     {
         $metadataFactory = new AttributeDocumentMetadataFactory();
 
@@ -60,6 +63,6 @@ final class MongoDBRepositoryManager implements RepositoryManager
             $builder->useExtension($extension);
         }
 
-        return new self($database, $metadataFactory, $builder->build());
+        return new self($client, $metadataFactory, $builder->build());
     }
 }
