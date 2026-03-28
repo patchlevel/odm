@@ -13,6 +13,13 @@ interface Repository
     /** @return T|null */
     public function find(string $id): object|null;
 
+    /**
+     * @return T
+     *
+     * @throws DocumentNotFound
+     */
+    public function get(string $id): object;
+
     public function remove(string $id): void;
 
     /** @return iterable<T> */

@@ -20,12 +20,15 @@ use function str_ends_with;
  */
 final readonly class MongoDBRepository implements Repository
 {
+    private Collection $collection;
+
     /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
         private Hydrator $hydrator,
     ) {
+        $this->collection = $this->database->selectCollection($this->metadata->collection);
     }
 
     /** @param T $object */
@@ -37,13 +40,34 @@ final readonly class MongoDBRepository implements Repository
 
         $data = $this->hydrator->extract($object);
 
-        $this->collection()->insertOne($data);
+        $this->collection->insertOne($data);
+    }
+
+    /**
+     * @return T
+     *
+     * @throws DocumentNotFound
+     */
+    public function get(string $id): object
+    {
+        $object = $this->find($id);
+
+        if (!$object) {
+            throw new DocumentNotFound(
+                $this->metadata->className,
+                $id,
+                $this->collection->getDatabaseName(),
+                $this->collection->getCollectionName(),
+            );
+        }
+
+        return $object;
     }
 
     /** @return T|null */
     public function find(string $id): object|null
     {
-        $data = $this->collection()->findOne(['_id' => $id], [
+        $data = $this->collection->findOne(['_id' => $id], [
             'typeMap' => ['root' => 'array', 'document' => 'array'],
         ]);
 
@@ -56,13 +80,13 @@ final readonly class MongoDBRepository implements Repository
 
     public function remove(string $id): void
     {
-        $this->collection()->deleteOne(['_id' => $id]);
+        $this->collection->deleteOne(['_id' => $id]);
     }
 
     /** @return iterable<T> */
     public function findAll(): iterable
     {
-        $cursor = $this->collection()->find([], [
+        $cursor = $this->collection->find([], [
             'typeMap' => ['root' => 'array', 'document' => 'array'],
         ]);
 
@@ -98,7 +122,7 @@ final readonly class MongoDBRepository implements Repository
 
         $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
 
-        $cursor = $this->collection()->find($filter, $options);
+        $cursor = $this->collection->find($filter, $options);
 
         foreach ($cursor as $document) {
             yield $this->hydrator->hydrate($this->metadata->className, $document);
@@ -125,19 +149,19 @@ final readonly class MongoDBRepository implements Repository
             );
         }
 
-        $data = $this->collection()->findOne($filter, $options);
+        $data = $this->collection->findOne($filter, $options);
 
         return $data ? $this->hydrator->hydrate($this->metadata->className, $data) : null;
     }
 
     public function count(): int
     {
-        return $this->collection()->countDocuments();
+        return $this->collection->countDocuments();
     }
 
     public function has(string $id): bool
     {
-        return $this->collection()->countDocuments(['_id' => $id]) > 0;
+        return $this->collection->countDocuments(['_id' => $id]) > 0;
     }
 
     public function database(): Database
@@ -148,7 +172,7 @@ final readonly class MongoDBRepository implements Repository
     /** @return Collection<array<string, mixed>> */
     public function collection(): Collection
     {
-        return $this->database->selectCollection($this->metadata->collection);
+        return $this->collection;
     }
 
     /** @return DocumentMetadata<T> */
@@ -165,15 +189,13 @@ final readonly class MongoDBRepository implements Repository
 
     public function dropCollection(): void
     {
-        $this->collection()->drop();
+        $this->collection->drop();
     }
 
     public function updateIndexes(bool $dropUnknown = false): void
     {
-        $collection = $this->collection();
-
         $existingIndexes = [];
-        foreach (iterator_to_array($collection->listIndexes()) as $index) {
+        foreach (iterator_to_array($this->collection->listIndexes()) as $index) {
             $existingIndexes[$index['name']] = true;
         }
 
@@ -190,7 +212,7 @@ final readonly class MongoDBRepository implements Repository
                 $index->keys,
             );
 
-            $collection->createIndex($keys, [
+            $this->collection->createIndex($keys, [
                 'name' => $index->name,
                 'unique' => $index->unique,
             ]);
@@ -202,7 +224,7 @@ final readonly class MongoDBRepository implements Repository
             return;
         }
 
-        foreach (iterator_to_array($collection->listIndexes()) as $index) {
+        foreach (iterator_to_array($this->collection->listIndexes()) as $index) {
             if (in_array($index['name'], $desiredNames, true)) {
                 continue;
             }
@@ -212,7 +234,7 @@ final readonly class MongoDBRepository implements Repository
                 continue;
             }
 
-            $collection->dropIndex($index['name']);
+            $this->collection->dropIndex($index['name']);
         }
     }
 }

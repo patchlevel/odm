@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "03557a310900052b5fbe79284d570167",
+    "content-hash": "638c502b45f9b612af14255b8f5c7b76",
     "packages": [
         {
             "name": "patchlevel/hydrator",
@@ -1901,16 +1901,16 @@
         },
         {
             "name": "patchlevel/rango",
-            "version": "1.0.0-alpha.2",
+            "version": "1.0.0-alpha.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/rango.git",
-                "reference": "f5365547aa559dd01f94aad3f773cd89172d02b1"
+                "reference": "140d3f45eb7cfe5578aa318011c19de6a439161f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/rango/zipball/f5365547aa559dd01f94aad3f773cd89172d02b1",
-                "reference": "f5365547aa559dd01f94aad3f773cd89172d02b1",
+                "url": "https://api.github.com/repos/patchlevel/rango/zipball/140d3f45eb7cfe5578aa318011c19de6a439161f",
+                "reference": "140d3f45eb7cfe5578aa318011c19de6a439161f",
                 "shasum": ""
             },
             "require": {
@@ -1957,9 +1957,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/rango/issues",
-                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.2"
+                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.3"
             },
-            "time": "2026-03-27T15:23:40+00:00"
+            "time": "2026-03-28T14:39:25+00:00"
         },
         {
             "name": "phar-io/manifest",
