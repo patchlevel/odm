@@ -53,12 +53,12 @@ class MongoDBRepositoryTest extends TestCase
         $this->client->dropDatabase('patchlevel');
     }
 
-    public function testSave(): void
+    public function testInsert(): void
     {
         $repository = $this->repositoryManager->get(Profile::class);
 
         $document = new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]);
-        $repository->persist($document);
+        $repository->insert($document);
 
         $raw = $repository->collection()->findOne(['_id' => 'r-1']);
 
@@ -73,6 +73,72 @@ class MongoDBRepositoryTest extends TestCase
         }
 
         self::assertSame(['php'], $skills);
+    }
+
+    public function testInsertMany(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->insert(
+            new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]),
+            new Profile('r-2', 'Beans', Status::INACTIVE, [new Skill('js')]),
+        );
+
+        self::assertSame(2, $repository->count());
+        self::assertTrue($repository->has('r-1'));
+        self::assertTrue($repository->has('r-2'));
+    }
+
+    public function testUpdate(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+
+        $repository->update(new Profile('r-1', 'Updated', Status::INACTIVE, [new Skill('go')]));
+
+        $updated = $repository->collection()->findOne(['_id' => 'r-1']);
+
+        self::assertNotNull($updated);
+        self::assertSame('Updated', $updated['name']);
+        self::assertSame('inactive', $updated['status']);
+        self::assertSame(['go'], is_array($updated['skills']) ? $updated['skills'] : iterator_to_array($updated['skills']));
+    }
+
+    public function testUpdateMany(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+
+        $repository->update(
+            new Profile('r-1', 'Rango Updated', Status::ACTIVE, [new Skill('php'), new Skill('mongodb')]),
+            new Profile('r-2', 'Beans Updated', Status::ACTIVE, [new Skill('ts')]),
+        );
+
+        $r1 = $repository->collection()->findOne(['_id' => 'r-1']);
+        $r2 = $repository->collection()->findOne(['_id' => 'r-2']);
+
+        self::assertNotNull($r1);
+        self::assertNotNull($r2);
+        self::assertSame('Rango Updated', $r1['name']);
+        self::assertSame('Beans Updated', $r2['name']);
     }
 
     public function testLoad(): void
@@ -316,10 +382,41 @@ class MongoDBRepositoryTest extends TestCase
         self::assertSame(1, $repository->count());
     }
 
+    public function testRemoveMany(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Elsa',
+            'status' => 'active',
+            'skills' => ['go'],
+        ]);
+
+        $repository->remove('r-1', 'r-3');
+
+        self::assertFalse($repository->has('r-1'));
+        self::assertFalse($repository->has('r-3'));
+        self::assertTrue($repository->has('r-2'));
+        self::assertSame(1, $repository->count());
+    }
+
     public function testDropCollection(): void
     {
         $repository = $this->repositoryManager->get(Profile::class);
-        $repository->persist(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
+        $repository->insert(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')]));
 
         $repository->dropCollection();
 

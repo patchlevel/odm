@@ -7,8 +7,11 @@ namespace Patchlevel\ODM\Repository;
 /** @template T of object */
 interface Repository
 {
-    /** @param T $object */
-    public function persist(object $object): void;
+    /** @param list<T> ...$objects */
+    public function insert(object ...$objects): void;
+
+    /** @param list<T> ...$objects */
+    public function update(object ...$objects): void;
 
     /** @return T|null */
     public function find(string $id): object|null;
@@ -20,7 +23,7 @@ interface Repository
      */
     public function get(string $id): object;
 
-    public function remove(string $id): void;
+    public function remove(string ...$id): void;
 
     /** @return iterable<T> */
     public function findAll(): iterable;

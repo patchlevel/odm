@@ -10,6 +10,7 @@ use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_map;
+use function count;
 use function in_array;
 use function iterator_to_array;
 use function str_ends_with;
@@ -31,16 +32,66 @@ final readonly class MongoDBRepository implements Repository
         $this->collection = $this->database->selectCollection($this->metadata->collection);
     }
 
-    /** @param T $object */
-    public function persist(object $object): void
+    /** @param list<T> ...$objects */
+    public function insert(object ...$objects): void
     {
-        if ($object::class !== $this->metadata->className) {
-            throw new WrongClass($this->metadata->className, $object::class);
+        if (count($objects) === 1) {
+            $object = $objects[0];
+
+            if ($object::class !== $this->metadata->className) {
+                throw new WrongClass($this->metadata->className, $object::class);
+            }
+
+            $data = $this->hydrator->extract($object);
+            $this->collection->insertOne($data);
+
+            return;
         }
 
-        $data = $this->hydrator->extract($object);
+        $this->collection->insertMany(array_map(function (object $object): array {
+            if ($object::class !== $this->metadata->className) {
+                throw new WrongClass($this->metadata->className, $object::class);
+            }
 
-        $this->collection->insertOne($data);
+            return $this->hydrator->extract($object);
+        }, $objects));
+    }
+
+    /** @param list<T> ...$objects */
+    public function update(object ...$objects): void
+    {
+        if (count($objects) === 0) {
+            return;
+        }
+
+        if (count($objects) === 1) {
+            $object = $objects[0];
+
+            if ($object::class !== $this->metadata->className) {
+                throw new WrongClass($this->metadata->className, $object::class);
+            }
+
+            $data = $this->hydrator->extract($object);
+
+            $this->collection->updateOne(['_id' => $data['_id']], ['$set' => $data]);
+
+            return;
+        }
+
+        $this->collection->bulkWrite(array_map(function (object $object): array {
+            if ($object::class !== $this->metadata->className) {
+                throw new WrongClass($this->metadata->className, $object::class);
+            }
+
+            $data = $this->hydrator->extract($object);
+
+            return [
+                'updateOne' => [
+                    ['_id' => $data['_id']],
+                    ['$set' => $data],
+                ],
+            ];
+        }, $objects));
     }
 
     /**
@@ -78,9 +129,15 @@ final readonly class MongoDBRepository implements Repository
         return $this->hydrator->hydrate($this->metadata->className, $data);
     }
 
-    public function remove(string $id): void
+    public function remove(string ...$id): void
     {
-        $this->collection->deleteOne(['_id' => $id]);
+        if (count($id) === 1) {
+            $this->collection->deleteOne(['_id' => $id[0]]);
+
+            return;
+        }
+
+        $this->collection->deleteMany(['_id' => ['$in' => $id]]);
     }
 
     /** @return iterable<T> */
@@ -101,8 +158,12 @@ final readonly class MongoDBRepository implements Repository
      *
      * @return iterable<T>
      */
-    public function findBy(array $filter, array|null $orderBy = null, int|null $limit = null, int|null $offset = null): iterable
-    {
+    public function findBy(
+        array $filter,
+        array|null $orderBy = null,
+        int|null $limit = null,
+        int|null $offset = null,
+    ): iterable {
         $options = [];
 
         if ($limit !== null) {
