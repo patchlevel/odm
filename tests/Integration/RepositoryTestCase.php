@@ -23,11 +23,11 @@ use function array_map;
 use function is_array;
 use function iterator_to_array;
 
-abstract class RepositoryTest extends TestCase
+abstract class RepositoryTestCase extends TestCase
 {
     protected MongoDBRepositoryManager|RangoRepositoryManager $repositoryManager;
 
-    abstract function createRepositoryManager(
+    abstract public function createRepositoryManager(
         HydratorWithContext $hydrator,
         DocumentMetadataFactory $documentMetadataFactory,
     ): MongoDBRepositoryManager|RangoRepositoryManager;
@@ -41,11 +41,7 @@ abstract class RepositoryTest extends TestCase
             ->useExtension(new ODMExtension())
             ->build();
 
-        $this->repositoryManager = $this->createRepositoryManager(
-            $hydrator,
-            $documentMetadataFactory,
-        );
-
+        $this->repositoryManager = $this->createRepositoryManager($hydrator, $documentMetadataFactory);
         $this->repositoryManager->get(Profile::class)->database()->drop();
     }
 

@@ -12,9 +12,9 @@ use Patchlevel\ODM\Repository\RangoRepositoryManager;
 
 use function getenv;
 
-class MongoDBRepositoryTest extends RepositoryTest
+final class MongoDBRepositoryTest extends RepositoryTestCase
 {
-    function createRepositoryManager(
+    public function createRepositoryManager(
         HydratorWithContext $hydrator,
         DocumentMetadataFactory $documentMetadataFactory,
     ): MongoDBRepositoryManager|RangoRepositoryManager {
