@@ -35,7 +35,7 @@ class MongoDBRepositoryTest extends TestCase
 
         $hydrator = (new StackHydratorBuilder())
             ->useExtension(new CoreExtension())
-            ->useExtension(new ODMExtension($documentMetadataFactory))
+            ->useExtension(new ODMExtension())
             ->build();
 
         $this->client->dropDatabase('patchlevel');
@@ -218,6 +218,35 @@ class MongoDBRepositoryTest extends TestCase
         ]);
 
         $results = iterator_to_array($repository->findBy(['status' => 'active']), false);
+
+        self::assertCount(2, $results);
+        self::assertSame(['r-1', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));
+    }
+
+    public function testFindWithFilterById(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['tracking'],
+        ]);
+
+        $results = iterator_to_array($repository->findBy(['id' => ['$in' => ['r-1', 'r-3']]]), false);
 
         self::assertCount(2, $results);
         self::assertSame(['r-1', 'r-3'], array_map(static fn (Profile $doc) => $doc->id, $results));

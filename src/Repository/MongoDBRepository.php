@@ -42,7 +42,10 @@ final readonly class MongoDBRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract($object);
+            $data = $this->hydrator->extract(
+                $object,
+                [DocumentMetadata::class => $this->metadata],
+            );
             $this->collection->insertOne($data);
 
             return;
@@ -53,7 +56,10 @@ final readonly class MongoDBRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            return $this->hydrator->extract($object);
+            return $this->hydrator->extract(
+                $object,
+                [DocumentMetadata::class => $this->metadata],
+            );
         }, $objects));
     }
 
@@ -71,7 +77,10 @@ final readonly class MongoDBRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract($object);
+            $data = $this->hydrator->extract(
+                $object,
+                [DocumentMetadata::class => $this->metadata],
+            );
 
             $this->collection->updateOne(['_id' => $data['_id']], ['$set' => $data]);
 
@@ -83,7 +92,10 @@ final readonly class MongoDBRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract($object);
+            $data = $this->hydrator->extract(
+                $object,
+                [DocumentMetadata::class => $this->metadata],
+            );
 
             return [
                 'updateOne' => [
@@ -126,7 +138,11 @@ final readonly class MongoDBRepository implements Repository
             return null;
         }
 
-        return $this->hydrator->hydrate($this->metadata->className, $data);
+        return $this->hydrator->hydrate(
+            $this->metadata->className,
+            $data,
+            [DocumentMetadata::class => $this->metadata],
+        );
     }
 
     public function remove(string ...$id): void
@@ -148,7 +164,11 @@ final readonly class MongoDBRepository implements Repository
         ]);
 
         foreach ($cursor as $document) {
-            yield $this->hydrator->hydrate($this->metadata->className, $document);
+            yield $this->hydrator->hydrate(
+                $this->metadata->className,
+                $document,
+                [DocumentMetadata::class => $this->metadata],
+            );
         }
     }
 
@@ -175,18 +195,19 @@ final readonly class MongoDBRepository implements Repository
         }
 
         if ($orderBy !== null) {
-            $options['sort'] = array_map(
-                static fn ($direction) => $direction === 'desc' ? -1 : 1,
-                $orderBy,
-            );
+            $options['sort'] = $this->metadata->mapSortingToFieldPaths($orderBy);
         }
 
         $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
 
-        $cursor = $this->collection->find($filter, $options);
+        $cursor = $this->collection->find($this->metadata->mapFilterToFieldPaths($filter), $options);
 
         foreach ($cursor as $document) {
-            yield $this->hydrator->hydrate($this->metadata->className, $document);
+            yield $this->hydrator->hydrate(
+                $this->metadata->className,
+                $document,
+                [DocumentMetadata::class => $this->metadata],
+            );
         }
     }
 
@@ -204,15 +225,20 @@ final readonly class MongoDBRepository implements Repository
         ];
 
         if ($orderBy !== null) {
-            $options['sort'] = array_map(
-                static fn ($direction) => $direction === 'desc' ? -1 : 1,
-                $orderBy,
-            );
+            $options['sort'] = $this->metadata->mapSortingToFieldPaths($orderBy);
         }
 
-        $data = $this->collection->findOne($filter, $options);
+        $data = $this->collection->findOne($this->metadata->mapFilterToFieldPaths($filter), $options);
 
-        return $data ? $this->hydrator->hydrate($this->metadata->className, $data) : null;
+        if ($data === null) {
+            return null;
+        }
+
+        return $this->hydrator->hydrate(
+            $this->metadata->className,
+            $data,
+            [DocumentMetadata::class => $this->metadata],
+        );
     }
 
     public function count(): int
@@ -268,10 +294,7 @@ final readonly class MongoDBRepository implements Repository
                 continue;
             }
 
-            $keys = array_map(
-                static fn ($direction) => $direction === 'desc' ? -1 : 1,
-                $index->keys,
-            );
+            $keys = $this->metadata->mapSortingToFieldPaths($index->keys);
 
             $this->collection->createIndex($keys, [
                 'name' => $index->name,

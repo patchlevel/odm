@@ -12,6 +12,7 @@ use Patchlevel\Hydrator\StackHydratorBuilder;
 use Patchlevel\ODM\Hydrator\ODMExtension;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
+use Patchlevel\ODM\Metadata\StackHydratorFieldMappingResolver;
 
 final class MongoDBRepositoryManager implements RepositoryManager
 {
@@ -53,16 +54,20 @@ final class MongoDBRepositoryManager implements RepositoryManager
     /** @param list<Extension> $extensions */
     public static function create(Client $client, array $extensions = []): self
     {
-        $metadataFactory = new AttributeDocumentMetadataFactory();
-
         $builder = (new StackHydratorBuilder())
             ->useExtension(new CoreExtension())
-            ->useExtension(new ODMExtension($metadataFactory));
+            ->useExtension(new ODMExtension());
 
         foreach ($extensions as $extension) {
             $builder->useExtension($extension);
         }
 
-        return new self($client, $metadataFactory, $builder->build());
+        $hydrator = $builder->build();
+
+        $metadataFactory = new AttributeDocumentMetadataFactory(
+            new StackHydratorFieldMappingResolver($hydrator),
+        );
+
+        return new self($client, $metadataFactory, $hydrator);
     }
 }

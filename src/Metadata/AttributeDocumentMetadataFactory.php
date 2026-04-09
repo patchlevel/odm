@@ -10,8 +10,18 @@ use Patchlevel\ODM\Attribute\Index as IndexAttribute;
 use Patchlevel\ODM\Index;
 use ReflectionClass;
 
-final readonly class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
+final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 {
+    /**
+     * @var array<class-string<object>, DocumentMetadata<object>>
+     */
+    private array $metadataCache = [];
+
+    public function __construct(
+        private readonly FieldMappingResolver|null $fieldResolver = null,
+    ) {
+    }
+
     /**
      * @param class-string<T> $className
      *
@@ -21,6 +31,10 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
      */
     public function metadata(string $className): DocumentMetadata
     {
+        if (isset($this->metadataCache[$className])) {
+            return $this->metadataCache[$className];
+        }
+
         $reflection = new ReflectionClass($className);
 
         $attributes = $reflection->getAttributes(Document::class);
@@ -34,6 +48,7 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
         $collection = $attribute->collection;
         $database = $attribute->database;
         $idProperty = null;
+        $fields = [];
 
         foreach ($reflection->getProperties() as $reflectionProperty) {
             $attributes = $reflectionProperty->getAttributes(Id::class);
@@ -49,16 +64,33 @@ final readonly class AttributeDocumentMetadataFactory implements DocumentMetadat
             $idProperty = $reflectionProperty->getName();
         }
 
+        foreach ($reflection->getProperties() as $reflectionProperty) {
+            if ($idProperty === $reflectionProperty->getName()) {
+                $fields[$reflectionProperty->getName()] = new FieldMapping('_id');
+
+                continue;
+            }
+
+            $field = $this->fieldResolver?->resolve($reflectionProperty);
+
+            if (!$field) {
+                continue;
+            }
+
+            $fields[$reflectionProperty->getName()] = $field;
+        }
+
         if ($idProperty === null) {
             throw new NoIdPropertyFound($className);
         }
 
-        return new DocumentMetadata(
+        return $this->metadataCache[$className] = new DocumentMetadata(
             $className,
             $database,
             $collection,
             $idProperty,
             $this->indexes($reflection),
+            $fields,
         );
     }
 

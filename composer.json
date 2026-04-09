@@ -22,7 +22,7 @@
   ],
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0" ,
-    "patchlevel/hydrator": "^1.18.0"
+    "patchlevel/hydrator": "dev-add-methods-on-normalizers as 1.23.0"
   },
   "require-dev": {
     "ext-mongodb": "^2.1",
