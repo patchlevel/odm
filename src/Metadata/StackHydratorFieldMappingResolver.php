@@ -19,7 +19,7 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
     ) {
     }
 
-    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null
+    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
     {
         $metadata = $this->hydrator->metadata($reflectionProperty->getDeclaringClass()->getName());
         $property = $metadata->properties[$reflectionProperty->getName()];
@@ -70,6 +70,7 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
 
     private function resolveArrayShape(string $fieldName, ArrayShapeNormalizer $arrayShapeNormalizer): FieldMapping
     {
+        /** @var array<string, FieldMapping> $children */
         $children = [];
 
         foreach ($arrayShapeNormalizer->innerNormalizers() as $key => $normalizer) {

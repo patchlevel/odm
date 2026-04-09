@@ -8,7 +8,6 @@ use MongoDB\Client;
 use Patchlevel\Hydrator\HydratorWithContext;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
-use Patchlevel\ODM\Repository\RangoRepositoryManager;
 
 use function getenv;
 
@@ -17,7 +16,7 @@ final class MongoDBRepositoryTest extends RepositoryTestCase
     public function createRepositoryManager(
         HydratorWithContext $hydrator,
         DocumentMetadataFactory $documentMetadataFactory,
-    ): MongoDBRepositoryManager|RangoRepositoryManager {
+    ): MongoDBRepositoryManager {
         $uri = getenv('MONGODB_URI');
 
         if (!$uri) {
