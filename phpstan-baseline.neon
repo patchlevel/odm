@@ -67,6 +67,12 @@ parameters:
 			path: src/Repository/MongoDBRepository.php
 
 		-
+			message: '#^Parameter \#1 \$operations of method MongoDB\\Collection\:\:bulkWrite\(\) expects list\<array\{deleteMany\: array\{0\: array\|object, 1\?\: array\}\}\|array\{deleteOne\: array\{0\: array\|object, 1\?\: array\}\}\|array\{insertOne\: array\{array\|object\}\}\|array\{replaceOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateMany\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\{_id\: mixed\}, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Repository/MongoDBRepository.php
+
+		-
 			message: '#^Parameter \#2 \$data of method Patchlevel\\Hydrator\\HydratorWithContext\:\:hydrate\(\) expects array\<string, mixed\>, array\|object given\.$#'
 			identifier: argument.type
 			count: 2

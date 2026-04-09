@@ -6,9 +6,11 @@ namespace Patchlevel\ODM\Tests\Unit\Metadata;
 
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\ODM\Metadata\FieldMapping;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+#[CoversClass(DocumentMetadata::class)]
 final class DocumentMetadataTest extends TestCase
 {
     public function testPropertyPathToFieldPathWithoutMapping(): void
