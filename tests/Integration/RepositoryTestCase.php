@@ -45,11 +45,6 @@ abstract class RepositoryTestCase extends TestCase
         $this->repositoryManager->get(Profile::class)->database()->drop();
     }
 
-    protected function tearDown(): void
-    {
-        $this->repositoryManager->get(Profile::class)->database()->drop();
-    }
-
     public function testInsert(): void
     {
         $repository = $this->repositoryManager->get(Profile::class);

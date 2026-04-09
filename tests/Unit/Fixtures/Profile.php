@@ -13,15 +13,23 @@ use Patchlevel\ODM\Attribute\Index;
 #[Index('by_status', ['status' => 'asc'])]
 final readonly class Profile
 {
-    /** @param list<Skill> $skills */
+    /**
+     * @param list<Skill>                                  $skills
+     * @param list<Address>                                $addresses
+     * @param array{height: int, addresses: list<Address>} $stats
+     */
     public function __construct(
         #[Id]
         public string $id,
-        #[NormalizedName('__personal_data__')]
+        #[NormalizedName('_personal_data')]
         public PersonalData $personalData,
         public Status $status,
         #[NormalizedName('_skills')]
         public array $skills,
+        #[NormalizedName('_addresses')]
+        public array $addresses,
+        #[NormalizedName('_stats')]
+        public array $stats,
     ) {
     }
 }

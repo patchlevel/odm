@@ -55,7 +55,7 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
 
     private function resolveObjectNormalizer(string $fieldName, ObjectNormalizer $objectNormalizer): FieldMapping
     {
-        $metadata = $this->hydrator->metadata($objectNormalizer->getClassName());
+        $metadata = $this->hydrator->metadata($objectNormalizer->className());
         $children = [];
 
         foreach ($metadata->properties as $property) {

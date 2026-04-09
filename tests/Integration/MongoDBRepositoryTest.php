@@ -21,7 +21,7 @@ final class MongoDBRepositoryTest extends RepositoryTestCase
         $uri = getenv('MONGODB_URI');
 
         if (!$uri) {
-            self::markTestSkipped('MONGODB_URI is not set');
+            $this->markTestSkipped('MONGODB_URI is not set');
         }
 
         $client = new Client($uri);

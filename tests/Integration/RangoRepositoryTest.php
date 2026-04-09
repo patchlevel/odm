@@ -10,6 +10,7 @@ use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
 use Patchlevel\Rango\Client;
 
+use function dump;
 use function getenv;
 
 final class RangoRepositoryTest extends RepositoryTestCase
@@ -21,7 +22,8 @@ final class RangoRepositoryTest extends RepositoryTestCase
         $uri = getenv('POSTGRES_URI');
 
         if (!$uri) {
-            self::markTestSkipped('POSTGRES_URI is not set');
+            $this->markTestSkipped('POSTGRES_URI is not set');
+            dump('Skipping test due to missing POSTGRES_URI');
         }
 
         $client = new Client($uri);
