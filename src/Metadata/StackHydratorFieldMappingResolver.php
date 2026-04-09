@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Patchlevel\ODM\Metadata;
 
 use Patchlevel\Hydrator\Metadata\PropertyMetadata;
@@ -13,7 +15,7 @@ use ReflectionProperty;
 final readonly class StackHydratorFieldMappingResolver implements FieldMappingResolver
 {
     public function __construct(
-        private StackHydrator $hydrator
+        private StackHydrator $hydrator,
     ) {
     }
 
@@ -57,12 +59,12 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
         $children = [];
 
         foreach ($metadata->properties as $property) {
-            $children[$property->getName()] = $this->resolvePropertyMetadata($property);
+            $children[$property->propertyName] = $this->resolvePropertyMetadata($property);
         }
 
         return new FieldMapping(
             $fieldName,
-            $children
+            $children,
         );
     }
 
@@ -76,7 +78,7 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
 
         return new FieldMapping(
             $fieldName,
-            $children
+            $children,
         );
     }
 }

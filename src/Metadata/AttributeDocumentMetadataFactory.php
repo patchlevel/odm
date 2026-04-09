@@ -12,9 +12,7 @@ use ReflectionClass;
 
 final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 {
-    /**
-     * @var array<class-string<object>, DocumentMetadata<object>>
-     */
+    /** @var array<class-string<object>, DocumentMetadata<object>> */
     private array $metadataCache = [];
 
     public function __construct(
