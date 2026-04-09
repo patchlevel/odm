@@ -59,7 +59,6 @@ final readonly class MongoDBCipherKeyStore implements CipherKeyStore
         $this->collection()->deleteOne(['_id' => $id]);
     }
 
-    /** @return Collection<CipherKeyData> */
     private function collection(): Collection
     {
         return $this->database->selectCollection($this->collection);

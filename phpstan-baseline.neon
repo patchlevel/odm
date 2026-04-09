@@ -1,0 +1,139 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Parameter \#1 \$data of method Patchlevel\\ODM\\Hydrator\\MongoDBCipherKeyStore\:\:hydrate\(\) expects array\{_id\: string, subject_id\: string, key\: non\-empty\-string, method\: non\-empty\-string, created_at\: string\}, array\|object given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Hydrator/MongoDBCipherKeyStore.php
+
+		-
+			message: '#^Parameter \#1 \$id of class Patchlevel\\Hydrator\\Extension\\Cryptography\\Cipher\\CipherKey constructor expects non\-empty\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Hydrator/MongoDBCipherKeyStore.php
+
+		-
+			message: '#^Parameter \#2 \$subjectId of class Patchlevel\\Hydrator\\Extension\\Cryptography\\Cipher\\CipherKey constructor expects non\-empty\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Hydrator/MongoDBCipherKeyStore.php
+
+		-
+			message: '#^Method Patchlevel\\ODM\\Hydrator\\RangoCipherKeyStore\:\:collection\(\) should return Patchlevel\\Rango\\Collection\<array\{_id\: string, subject_id\: string, key\: non\-empty\-string, method\: non\-empty\-string, created_at\: string\}\> but returns Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Hydrator/RangoCipherKeyStore.php
+
+		-
+			message: '#^Parameter \#1 \$id of class Patchlevel\\Hydrator\\Extension\\Cryptography\\Cipher\\CipherKey constructor expects non\-empty\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Hydrator/RangoCipherKeyStore.php
+
+		-
+			message: '#^Parameter \#2 \$subjectId of class Patchlevel\\Hydrator\\Extension\\Cryptography\\Cipher\\CipherKey constructor expects non\-empty\-string, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Hydrator/RangoCipherKeyStore.php
+
+		-
+			message: '#^Method Patchlevel\\ODM\\Metadata\\AttributeDocumentMetadataFactory\:\:metadata\(\) should return Patchlevel\\ODM\\Metadata\\DocumentMetadata\<T of object\> but returns Patchlevel\\ODM\\Metadata\\DocumentMetadata\<object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Metadata/AttributeDocumentMetadataFactory.php
+
+		-
+			message: '#^Parameter \#1 \$filter of method Patchlevel\\ODM\\Metadata\\DocumentMetadata\<T of object\>\:\:mapFilterToFieldPathsWithFields\(\) expects array\<string, mixed\>, array\<mixed, mixed\> given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Metadata/DocumentMetadata.php
+
+		-
+			message: '#^Parameter \#2 \$children of class Patchlevel\\ODM\\Metadata\\FieldMapping constructor expects array\<string, Patchlevel\\ODM\\Metadata\\FieldMapping\>, array\<Patchlevel\\ODM\\Metadata\\FieldMapping\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Metadata/StackHydratorFieldMappingResolver.php
+
+		-
+			message: '#^PHPDoc tag @return contains generic type MongoDB\\Collection\<array\<string, mixed\>\> but class MongoDB\\Collection is not generic\.$#'
+			identifier: generics.notGeneric
+			count: 1
+			path: src/Repository/MongoDBRepository.php
+
+		-
+			message: '#^Parameter \#1 \$documents of method MongoDB\\Collection\:\:insertMany\(\) expects list\<array\|object\>, array\<int\|string, array\<string, mixed\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Repository/MongoDBRepository.php
+
+		-
+			message: '#^Parameter \#2 \$data of method Patchlevel\\Hydrator\\HydratorWithContext\:\:hydrate\(\) expects array\<string, mixed\>, array\|object given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Repository/MongoDBRepository.php
+
+		-
+			message: '#^Parameter \#2 \$data of method Patchlevel\\Hydrator\\HydratorWithContext\:\:hydrate\(\) expects array\<string, mixed\>, array\|object\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Repository/MongoDBRepository.php
+
+		-
+			message: '#^Possibly invalid array key type mixed\.$#'
+			identifier: offsetAccess.invalidOffset
+			count: 1
+			path: src/Repository/MongoDBRepository.php
+
+		-
+			message: '#^Method Patchlevel\\ODM\\Repository\\MongoDBRepositoryManager\:\:get\(\) should return Patchlevel\\ODM\\Repository\\MongoDBRepository\<T of object\> but returns Patchlevel\\ODM\\Repository\\MongoDBRepository\<object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/MongoDBRepositoryManager.php
+
+		-
+			message: '#^Parameter \#1 \$documents of method Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\:\:insertMany\(\) expects list\<array\<string, mixed\>\>, array\<int\|string, array\<string, mixed\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Repository/RangoRepository.php
+
+		-
+			message: '#^Parameter \#1 \$operations of method Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\:\:bulkWrite\(\) expects list\<array\<string, list\<array\<string, mixed\>\>\>\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\{_id\: mixed\}, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Repository/RangoRepository.php
+
+		-
+			message: '#^Property Patchlevel\\ODM\\Repository\\RangoRepository\:\:\$collection with generic class Patchlevel\\Rango\\Collection does not specify its types\: TDocument$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Repository/RangoRepository.php
+
+		-
+			message: '#^Method Patchlevel\\ODM\\Repository\\RangoRepositoryManager\:\:get\(\) should return Patchlevel\\ODM\\Repository\\RangoRepository\<T of object\> but returns Patchlevel\\ODM\\Repository\\RangoRepository\<object\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Repository/RangoRepositoryManager.php
+
+		-
+			message: '#^Anonymous function should return string but returns mixed\.$#'
+			identifier: return.type
+			count: 3
+			path: tests/Integration/RepositoryTestCase.php
+
+		-
+			message: '#^Cannot access offset ''_id'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: tests/Integration/RepositoryTestCase.php
+
+		-
+			message: '#^Cannot access offset ''name'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: tests/Integration/RepositoryTestCase.php
+
+		-
+			message: '#^Parameter \#1 \$iterator of function iterator_to_array expects iterable, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/Integration/RepositoryTestCase.php

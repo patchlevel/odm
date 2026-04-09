@@ -7,7 +7,7 @@ namespace Patchlevel\ODM\Repository;
 use MongoDB\Client;
 use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\Extension;
-use Patchlevel\Hydrator\Hydrator;
+use Patchlevel\Hydrator\HydratorWithContext;
 use Patchlevel\Hydrator\StackHydratorBuilder;
 use Patchlevel\ODM\Hydrator\ODMExtension;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
@@ -22,7 +22,7 @@ final class MongoDBRepositoryManager implements RepositoryManager
     public function __construct(
         private readonly Client $client,
         private readonly DocumentMetadataFactory $metadataFactory,
-        private readonly Hydrator $hydrator,
+        private readonly HydratorWithContext $hydrator,
         private readonly string $defaultDatabase = 'default',
     ) {
     }

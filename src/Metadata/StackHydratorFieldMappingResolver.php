@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Patchlevel\ODM\Metadata;
 
 use Patchlevel\Hydrator\Metadata\PropertyMetadata;
@@ -13,11 +15,11 @@ use ReflectionProperty;
 final readonly class StackHydratorFieldMappingResolver implements FieldMappingResolver
 {
     public function __construct(
-        private StackHydrator $hydrator
+        private StackHydrator $hydrator,
     ) {
     }
 
-    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null
+    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
     {
         $metadata = $this->hydrator->metadata($reflectionProperty->getDeclaringClass()->getName());
         $property = $metadata->properties[$reflectionProperty->getName()];
@@ -53,21 +55,22 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
 
     private function resolveObjectNormalizer(string $fieldName, ObjectNormalizer $objectNormalizer): FieldMapping
     {
-        $metadata = $this->hydrator->metadata($objectNormalizer->getClassName());
+        $metadata = $this->hydrator->metadata($objectNormalizer->className());
         $children = [];
 
         foreach ($metadata->properties as $property) {
-            $children[$property->getName()] = $this->resolvePropertyMetadata($property);
+            $children[$property->propertyName] = $this->resolvePropertyMetadata($property);
         }
 
         return new FieldMapping(
             $fieldName,
-            $children
+            $children,
         );
     }
 
     private function resolveArrayShape(string $fieldName, ArrayShapeNormalizer $arrayShapeNormalizer): FieldMapping
     {
+        /** @var array<string, FieldMapping> $children */
         $children = [];
 
         foreach ($arrayShapeNormalizer->innerNormalizers() as $key => $normalizer) {
@@ -76,7 +79,7 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
 
         return new FieldMapping(
             $fieldName,
-            $children
+            $children,
         );
     }
 }

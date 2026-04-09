@@ -22,8 +22,23 @@ phpstan-baseline: vendor                                                        
 	vendor/bin/phpstan analyse --generate-baseline --memory-limit=-1
 
 .PHONY: phpunit
-phpunit: vendor                                                                 ## run phpunit tests
-	MONGODB_URI="mongodb://localhost:27017" POSTGRES_URI="pgsql:host=localhost;port=5432;dbname=eventstore;user=postgres;password=postgres" XDEBUG_MODE=coverage vendor/bin/phpunit
+phpunit: vendor phpunit-unit phpunit-integration                              	## run phpunit tests
+
+.PHONY: phpunit-integration
+phpunit-integration: vendor                                                    	## run phpunit integration tests
+	MONGODB_URI="mongodb://localhost:27017" POSTGRES_URI="pgsql:host=localhost;port=5432;dbname=eventstore;user=postgres;password=postgres" vendor/bin/phpunit --testsuite=integration
+
+.PHONY: phpunit-integration-postgres
+phpunit-integration-postgres: vendor                                            ## run phpunit integration tests on postgres
+	POSTGRES_URI="pgsql:host=localhost;port=5432;dbname=eventstore;user=postgres;password=postgres" vendor/bin/phpunit --testsuite=integration
+
+.PHONY: phpunit-integration-mongodb
+phpunit-integration-mongodb: vendor                                               ## run phpunit integration tests on mysql
+	MONGODB_URI="mongodb://localhost:27017" vendor/bin/phpunit --testsuite=integration
+
+.PHONY: phpunit-unit
+phpunit-unit: vendor                                             				## run phpunit unit tests
+	XDEBUG_MODE=coverage vendor/bin/phpunit --testsuite=unit
 
 .PHONY: infection
 infection: vendor                                                               ## run infection

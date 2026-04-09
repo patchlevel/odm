@@ -6,7 +6,8 @@ namespace Patchlevel\ODM\Repository;
 
 use MongoDB\Collection;
 use MongoDB\Database;
-use Patchlevel\Hydrator\Hydrator;
+use MongoDB\Driver\Exception\ServerException;
+use Patchlevel\Hydrator\HydratorWithContext;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_map;
@@ -27,7 +28,7 @@ final readonly class MongoDBRepository implements Repository
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        private Hydrator $hydrator,
+        private HydratorWithContext $hydrator,
     ) {
         $this->collection = $this->database->selectCollection($this->metadata->collection);
     }
@@ -35,32 +36,36 @@ final readonly class MongoDBRepository implements Repository
     /** @param list<T> ...$objects */
     public function insert(object ...$objects): void
     {
-        if (count($objects) === 1) {
-            $object = $objects[0];
+        try {
+            if (count($objects) === 1) {
+                $object = $objects[0];
 
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
+                if ($object::class !== $this->metadata->className) {
+                    throw new WrongClass($this->metadata->className, $object::class);
+                }
+
+                $data = $this->hydrator->extract(
+                    $object,
+                    [DocumentMetadata::class => $this->metadata],
+                );
+                $this->collection->insertOne($data);
+
+                return;
             }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
-            $this->collection->insertOne($data);
+            $this->collection->insertMany(array_map(function (object $object): array {
+                if ($object::class !== $this->metadata->className) {
+                    throw new WrongClass($this->metadata->className, $object::class);
+                }
 
-            return;
+                return $this->hydrator->extract(
+                    $object,
+                    [DocumentMetadata::class => $this->metadata],
+                );
+            }, $objects));
+        } catch (ServerException $e) {
+            throw new InsertionFailed($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->collection->insertMany(array_map(function (object $object): array {
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
-            }
-
-            return $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
-        }, $objects));
     }
 
     /** @param list<T> ...$objects */
@@ -309,16 +314,16 @@ final readonly class MongoDBRepository implements Repository
         }
 
         foreach (iterator_to_array($this->collection->listIndexes()) as $index) {
-            if (in_array($index['name'], $desiredNames, true)) {
+            if (in_array($index->getName(), $desiredNames, true)) {
                 continue;
             }
 
             // Keep the built-in _id index.
-            if (str_ends_with($index['name'], '_id_')) {
+            if (str_ends_with($index->getName(), '_id_')) {
                 continue;
             }
 
-            $this->collection->dropIndex($index['name']);
+            $this->collection->dropIndex($index->getName());
         }
     }
 }

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Repository;
 
-use Patchlevel\Hydrator\Hydrator;
+use Patchlevel\Hydrator\HydratorWithContext;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\Rango\Collection;
 use Patchlevel\Rango\Database;
+use Patchlevel\Rango\Exception\QueryException;
 
 use function array_map;
 use function count;
@@ -26,7 +27,7 @@ final readonly class RangoRepository implements Repository
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        private Hydrator $hydrator,
+        private HydratorWithContext $hydrator,
     ) {
         $this->collection = $this->database->getCollection($this->metadata->collection);
     }
@@ -34,33 +35,42 @@ final readonly class RangoRepository implements Repository
     /** @param list<T> ...$objects */
     public function insert(object ...$objects): void
     {
-        if (count($objects) === 1) {
-            $object = $objects[0];
+        try {
+            if (count($objects) === 1) {
+                $object = $objects[0];
 
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
+                if ($object::class !== $this->metadata->className) {
+                    throw new WrongClass($this->metadata->className, $object::class);
+                }
+
+                $data = $this->hydrator->extract(
+                    $object,
+                    [DocumentMetadata::class => $this->metadata],
+                );
+
+                $this->collection->insertOne($data);
+
+                return;
             }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
+            $this->collection->insertMany(
+                array_map(
+                    function (object $object): array {
+                        if ($object::class !== $this->metadata->className) {
+                            throw new WrongClass($this->metadata->className, $object::class);
+                        }
+
+                        return $this->hydrator->extract(
+                            $object,
+                            [DocumentMetadata::class => $this->metadata],
+                        );
+                    },
+                    $objects,
+                ),
             );
-
-            $this->collection->insertOne($data);
-
-            return;
+        } catch (QueryException $e) {
+            throw new InsertionFailed($e->getMessage(), $e->getCode(), $e);
         }
-
-        $this->collection->insertMany(array_map(function (object $object): array {
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
-            }
-
-            return $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
-        }, $objects));
     }
 
     /** @param list<T> ...$objects */
@@ -292,16 +302,16 @@ final readonly class RangoRepository implements Repository
         }
 
         foreach ($this->collection->listIndexes() as $index) {
-            if (in_array($index['name'], $desiredNames, true)) {
+            if (in_array($index->getName(), $desiredNames, true)) {
                 continue;
             }
 
             // Keep primary key index.
-            if (str_ends_with($index['name'], '_pkey')) {
+            if (str_ends_with($index->getName(), '_pkey')) {
                 continue;
             }
 
-            $this->collection->dropIndex($index['name']);
+            $this->collection->dropIndex($index->getName());
         }
     }
 }

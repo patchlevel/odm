@@ -22,14 +22,14 @@
   ],
   "require": {
     "php": "~8.3.0 || ~8.4.0 || ~8.5.0" ,
-    "patchlevel/hydrator": "dev-add-methods-on-normalizers as 1.23.0"
+    "patchlevel/hydrator": "^1.23.0"
   },
   "require-dev": {
     "ext-mongodb": "^2.1",
     "infection/infection": "^0.31.9",
     "mongodb/mongodb": "^2.1",
     "patchlevel/coding-standard": "^1.3.0",
-    "patchlevel/rango": "1.0.0-alpha.3",
+    "patchlevel/rango": "1.0.0-alpha.4",
     "phpat/phpat": "^0.12.0",
     "phpbench/phpbench": "^1.2.15",
     "phpstan/phpstan": "^2.1.32",

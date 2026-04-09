@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5679695186cd93daaefd4e8f01bc87e6",
+    "content-hash": "029da272dcd1d95dd5a84818dde21ca7",
     "packages": [
         {
             "name": "patchlevel/hydrator",
-            "version": "dev-add-methods-on-normalizers",
+            "version": "1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/hydrator.git",
-                "reference": "4b8f1007d56a47764057302c538241bc0b64b79f"
+                "reference": "70c0602819f7c0a878c9654f5797b788ba427623"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/4b8f1007d56a47764057302c538241bc0b64b79f",
-                "reference": "4b8f1007d56a47764057302c538241bc0b64b79f",
+                "url": "https://api.github.com/repos/patchlevel/hydrator/zipball/70c0602819f7c0a878c9654f5797b788ba427623",
+                "reference": "70c0602819f7c0a878c9654f5797b788ba427623",
                 "shasum": ""
             },
             "require": {
@@ -66,9 +66,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/hydrator/issues",
-                "source": "https://github.com/patchlevel/hydrator/tree/add-methods-on-normalizers"
+                "source": "https://github.com/patchlevel/hydrator/tree/1.23.0"
             },
-            "time": "2026-04-08T14:05:16+00:00"
+            "time": "2026-04-09T08:24:28+00:00"
         },
         {
             "name": "psr/cache",
@@ -1901,16 +1901,16 @@
         },
         {
             "name": "patchlevel/rango",
-            "version": "1.0.0-alpha.3",
+            "version": "1.0.0-alpha.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/rango.git",
-                "reference": "140d3f45eb7cfe5578aa318011c19de6a439161f"
+                "reference": "dc7168f94cf664774b5bf64999486d328c6bc0b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/rango/zipball/140d3f45eb7cfe5578aa318011c19de6a439161f",
-                "reference": "140d3f45eb7cfe5578aa318011c19de6a439161f",
+                "url": "https://api.github.com/repos/patchlevel/rango/zipball/dc7168f94cf664774b5bf64999486d328c6bc0b8",
+                "reference": "dc7168f94cf664774b5bf64999486d328c6bc0b8",
                 "shasum": ""
             },
             "require": {
@@ -1957,9 +1957,9 @@
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/rango/issues",
-                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.3"
+                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.4"
             },
-            "time": "2026-03-28T14:39:25+00:00"
+            "time": "2026-04-09T12:17:35+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -5936,17 +5936,9 @@
             "time": "2024-03-07T20:33:40+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "patchlevel/hydrator",
-            "version": "dev-add-methods-on-normalizers",
-            "alias": "1.23.0",
-            "alias_normalized": "1.23.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "patchlevel/hydrator": 20,
         "patchlevel/rango": 15
     },
     "prefer-stable": false,
