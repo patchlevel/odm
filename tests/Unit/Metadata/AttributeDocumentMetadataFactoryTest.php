@@ -34,7 +34,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
             database: null,
             collection: 'rango_documents',
             idProperty: 'id',
-            indexes: [new Index('by_status', ['status' => 'asc'], unique: false)],
+            indexes: [
+                new Index('by_status', ['status' => 'asc'], unique: false),
+                new Index('by_status_other', ['status' => 'desc'], unique: false),
+            ],
             fields: ['id' => new FieldMapping('_id', [])],
         );
 
@@ -133,7 +136,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
             database: null,
             collection: 'rango_documents',
             idProperty: 'id',
-            indexes: [new Index('by_status', ['status' => 'asc'], unique: false)],
+            indexes: [
+                new Index('by_status', ['status' => 'asc'], unique: false),
+                new Index('by_status_other', ['status' => 'desc'], unique: false),
+            ],
             fields: [
                 'id' => new FieldMapping('_id', []),
                 'status' => new FieldMapping('_newStatus', []),
@@ -165,7 +171,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
             database: null,
             collection: 'rango_documents',
             idProperty: 'id',
-            indexes: [new Index('by_status', ['status' => 'asc'], unique: false)],
+            indexes: [
+                new Index('by_status', ['status' => 'asc'], unique: false),
+                new Index('by_status_other', ['status' => 'desc'], unique: false),
+            ],
             fields: ['id' => new FieldMapping('_id', [])],
         );
 

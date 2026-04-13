@@ -11,6 +11,7 @@ use Patchlevel\ODM\Attribute\Index;
 
 #[Document('rango_documents')]
 #[Index('by_status', ['status' => 'asc'])]
+#[Index('by_status_other', ['status' => 'desc'])]
 final readonly class Profile
 {
     /**

@@ -25,6 +25,18 @@ final class DocumentMetadataTest extends TestCase
         self::assertSame('name', $metadata->propertyPathToFieldPath('name'));
     }
 
+    public function testPropertyPathToFieldPathWithoutMappingNested(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+        );
+
+        self::assertSame('a.b.c', $metadata->propertyPathToFieldPath('a.b.c'));
+    }
+
     public function testPropertyPathToFieldPathWithMapping(): void
     {
         $metadata = new DocumentMetadata(
@@ -164,8 +176,8 @@ final class DocumentMetadataTest extends TestCase
         );
 
         self::assertSame(
-            ['_age' => ['$gt' => 18]],
-            $metadata->mapFilterToFieldPaths(['age' => ['$gt' => 18]]),
+            ['_age' => ['$gt' => 18, '$lt' => 30]],
+            $metadata->mapFilterToFieldPaths(['age' => ['$gt' => 18, '$lt' => 30]]),
         );
     }
 
