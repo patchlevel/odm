@@ -11,9 +11,11 @@ use Patchlevel\ODM\Metadata\FieldMapping;
 use Patchlevel\ODM\Metadata\StackHydratorFieldMappingResolver;
 use Patchlevel\ODM\Tests\Unit\Fixtures\PersonalData;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Profile;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
+#[CoversClass(StackHydratorFieldMappingResolver::class)]
 final class StackHydratorFieldMappingResolverTest extends TestCase
 {
     private StackHydratorFieldMappingResolver $resolver;

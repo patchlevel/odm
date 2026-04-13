@@ -64,7 +64,7 @@ jobs:
                 composer-options: ${{ matrix.composer-options }}
 
             - name: "Tests"
-              run: "vendor/bin/phpunit --testsuite=integration"
+              run: "vendor/bin/phpunit --testsuite=integration --no-coverage"
 
     mongodb:
       name: "mongodb"
@@ -113,4 +113,4 @@ jobs:
             composer-options: ${{ matrix.composer-options }}
 
         - name: "Tests"
-          run: "vendor/bin/phpunit --testsuite=integration"
+          run: "vendor/bin/phpunit --testsuite=integration --no-coverage"

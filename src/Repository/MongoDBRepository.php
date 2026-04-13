@@ -92,23 +92,23 @@ final readonly class MongoDBRepository implements Repository
             return;
         }
 
-        $this->collection->bulkWrite(array_map(function (object $object): array {
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
-            }
+        $this->collection->bulkWrite(array_map(
+            function (object $object): array {
+                if ($object::class !== $this->metadata->className) {
+                    throw new WrongClass($this->metadata->className, $object::class);
+                }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
+                $data = $this->hydrator->extract($object, [DocumentMetadata::class => $this->metadata]);
 
-            return [
-                'updateOne' => [
-                    ['_id' => $data['_id']],
-                    ['$set' => $data],
-                ],
-            ];
-        }, $objects));
+                return [
+                    'updateOne' => [
+                        ['_id' => $data['_id']],
+                        ['$set' => $data],
+                    ],
+                ];
+            },
+            $objects,
+        ));
     }
 
     /**

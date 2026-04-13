@@ -12,9 +12,17 @@
             <directory>tests/Unit</directory>
         </testsuite>
     </testsuites>
+
+    <coverage>
+        <report>
+            <html outputDirectory="./coverage"/>
+        </report>
+    </coverage>
+
     <source>
         <include>
             <directory>src</directory>
         </include>
     </source>
+
 </phpunit>

@@ -6,9 +6,11 @@ namespace Patchlevel\ODM\Tests\Unit\Metadata;
 
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\ODM\Metadata\FieldMapping;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
+#[CoversClass(DocumentMetadata::class)]
 final class DocumentMetadataTest extends TestCase
 {
     public function testPropertyPathToFieldPathWithoutMapping(): void
@@ -21,6 +23,18 @@ final class DocumentMetadataTest extends TestCase
         );
 
         self::assertSame('name', $metadata->propertyPathToFieldPath('name'));
+    }
+
+    public function testPropertyPathToFieldPathWithoutMappingNested(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+        );
+
+        self::assertSame('a.b.c', $metadata->propertyPathToFieldPath('a.b.c'));
     }
 
     public function testPropertyPathToFieldPathWithMapping(): void
@@ -162,8 +176,8 @@ final class DocumentMetadataTest extends TestCase
         );
 
         self::assertSame(
-            ['_age' => ['$gt' => 18]],
-            $metadata->mapFilterToFieldPaths(['age' => ['$gt' => 18]]),
+            ['_age' => ['$gt' => 18, '$lt' => 30]],
+            $metadata->mapFilterToFieldPaths(['age' => ['$gt' => 18, '$lt' => 30]]),
         );
     }
 

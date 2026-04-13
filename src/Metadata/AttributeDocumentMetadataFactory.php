@@ -45,22 +45,8 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 
         $collection = $attribute->collection;
         $database = $attribute->database;
-        $idProperty = null;
         $fields = [];
-
-        foreach ($reflection->getProperties() as $reflectionProperty) {
-            $attributes = $reflectionProperty->getAttributes(Id::class);
-
-            if ($attributes === []) {
-                continue;
-            }
-
-            if ($idProperty !== null) {
-                throw new MultipleIdPropertiesFound($className);
-            }
-
-            $idProperty = $reflectionProperty->getName();
-        }
+        $idProperty = $this->getIdProperty($reflection);
 
         foreach ($reflection->getProperties() as $reflectionProperty) {
             if ($idProperty === $reflectionProperty->getName()) {
@@ -76,10 +62,6 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
             }
 
             $fields[$reflectionProperty->getName()] = $field;
-        }
-
-        if ($idProperty === null) {
-            throw new NoIdPropertyFound($className);
         }
 
         return $this->metadataCache[$className] = new DocumentMetadata(
@@ -114,5 +96,31 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         }
 
         return $indexes;
+    }
+
+    /** @param ReflectionClass<object> $reflection */
+    private function getIdProperty(ReflectionClass $reflection): string
+    {
+        $idProperty = null;
+
+        foreach ($reflection->getProperties() as $reflectionProperty) {
+            $attributes = $reflectionProperty->getAttributes(Id::class);
+
+            if ($attributes === []) {
+                continue;
+            }
+
+            if ($idProperty !== null) {
+                throw new MultipleIdPropertiesFound($reflection->name);
+            }
+
+            $idProperty = $reflectionProperty->getName();
+        }
+
+        if ($idProperty === null) {
+            throw new NoIdPropertyFound($reflection->name);
+        }
+
+        return $idProperty;
     }
 }
