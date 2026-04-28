@@ -5,18 +5,14 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Tests\Integration;
 
 use MongoDB\Client;
-use Patchlevel\Hydrator\HydratorWithContext;
-use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 
 use function getenv;
 
 final class MongoDBRepositoryTest extends RepositoryTestCase
 {
-    public function createRepositoryManager(
-        HydratorWithContext $hydrator,
-        DocumentMetadataFactory $documentMetadataFactory,
-    ): MongoDBRepositoryManager {
+    public function createRepositoryManager(): MongoDBRepositoryManager
+    {
         $uri = getenv('MONGODB_URI');
 
         if (!$uri) {
@@ -25,11 +21,6 @@ final class MongoDBRepositoryTest extends RepositoryTestCase
 
         $client = new Client($uri);
 
-        return new MongoDBRepositoryManager(
-            $client,
-            $documentMetadataFactory,
-            $hydrator,
-            'patchlevel',
-        );
+        return MongoDBRepositoryManager::create($client);
     }
 }

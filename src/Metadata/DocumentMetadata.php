@@ -7,6 +7,7 @@ namespace Patchlevel\ODM\Metadata;
 use Patchlevel\ODM\Index;
 
 use function array_is_list;
+use function array_keys;
 use function array_map;
 use function explode;
 use function implode;
@@ -93,16 +94,22 @@ final readonly class DocumentMetadata
     {
         $parts = explode('.', $propertyPath);
         $fieldParts = [];
+        $mappedPropertyParts = [];
 
         foreach ($parts as $part) {
             if (!isset($fields[$part])) {
-                $fieldParts[] = $part;
-                $fields = [];
-                continue;
+                throw new UnknownPropertyPath(
+                    $this->className,
+                    $propertyPath,
+                    $part,
+                    implode('.', $mappedPropertyParts),
+                    array_keys($fields),
+                );
             }
 
             $field = $fields[$part];
             $fieldParts[] = $field->fieldName;
+            $mappedPropertyParts[] = $part;
             $fields = $field->children;
         }
 

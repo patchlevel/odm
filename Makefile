@@ -26,7 +26,7 @@ phpunit: vendor phpunit-unit phpunit-integration                              	#
 
 .PHONY: phpunit-integration
 phpunit-integration: vendor                                                    	## run phpunit integration tests
-	MONGODB_URI="mongodb://localhost:27017" POSTGRES_URI="pgsql:host=localhost;port=5432;dbname=eventstore;user=postgres;password=postgres" vendor/bin/phpunit --testsuite=integrationn --no-coverage
+	MONGODB_URI="mongodb://localhost:27017" POSTGRES_URI="pgsql:host=localhost;port=5432;dbname=eventstore;user=postgres;password=postgres" vendor/bin/phpunit --testsuite=integration --no-coverage
 
 .PHONY: phpunit-integration-postgres
 phpunit-integration-postgres: vendor                                            ## run phpunit integration tests on postgres
