@@ -26,7 +26,7 @@ final class UnknownPropertyPath extends RuntimeException
         $known = $knownProperties !== [] ? implode(', ', $knownProperties) : '<none>';
 
         parent::__construct(sprintf(
-            'Unknown property path "%s" for class %s: segment "%s" is not mapped under "%s". Known properties: %s.',
+            'Unknown property path "%s" for class %s: segment "%s" is not mapped under "%s". Known segments: %s.',
             $propertyPath,
             $className,
             $unknownSegment,
