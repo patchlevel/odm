@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Tests\Integration;
 
-use Patchlevel\Hydrator\CoreExtension;
-use Patchlevel\Hydrator\HydratorWithContext;
-use Patchlevel\Hydrator\StackHydratorBuilder;
-use Patchlevel\ODM\Hydrator\ODMExtension;
-use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
-use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\ODM\Repository\InsertionFailed;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
@@ -27,21 +21,11 @@ abstract class RepositoryTestCase extends TestCase
 {
     protected MongoDBRepositoryManager|RangoRepositoryManager $repositoryManager;
 
-    abstract public function createRepositoryManager(
-        HydratorWithContext $hydrator,
-        DocumentMetadataFactory $documentMetadataFactory,
-    ): MongoDBRepositoryManager|RangoRepositoryManager;
+    abstract public function createRepositoryManager(): MongoDBRepositoryManager|RangoRepositoryManager;
 
     public function setUp(): void
     {
-        $documentMetadataFactory = new AttributeDocumentMetadataFactory();
-
-        $hydrator = (new StackHydratorBuilder())
-            ->useExtension(new CoreExtension())
-            ->useExtension(new ODMExtension())
-            ->build();
-
-        $this->repositoryManager = $this->createRepositoryManager($hydrator, $documentMetadataFactory);
+        $this->repositoryManager = $this->createRepositoryManager();
         $this->repositoryManager->get(Profile::class)->database()->drop();
     }
 

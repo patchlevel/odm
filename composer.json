@@ -34,7 +34,8 @@
     "phpbench/phpbench": "^1.6.1",
     "phpstan/phpstan": "^2.1.46",
     "phpstan/phpstan-phpunit": "^2.0.16",
-    "phpunit/phpunit": "^11.5.55"
+    "phpunit/phpunit": "^11.5.55",
+    "symfony/var-dumper": "^v7.4.8 || ^v8.0.0"
   },
   "config": {
     "preferred-install": {
