@@ -175,7 +175,7 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
                 new Index('by_status', ['status' => 'asc'], unique: false),
                 new Index('by_status_other', ['status' => 'desc'], unique: false),
             ],
-            fields: ['id' => new FieldMapping('_id', [])],
+            fields: ['id' => new FieldMapping('_id', [], '_otherId')],
         );
 
         $fieldResolver = new class implements FieldMappingResolver
