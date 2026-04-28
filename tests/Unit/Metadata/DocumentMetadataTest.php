@@ -6,6 +6,7 @@ namespace Patchlevel\ODM\Tests\Unit\Metadata;
 
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\ODM\Metadata\FieldMapping;
+use Patchlevel\ODM\Metadata\UnknownPropertyPath;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -13,7 +14,7 @@ use stdClass;
 #[CoversClass(DocumentMetadata::class)]
 final class DocumentMetadataTest extends TestCase
 {
-    public function testPropertyPathToFieldPathWithoutMapping(): void
+    public function testPropertyPathToFieldPathWithoutMappingThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -22,10 +23,13 @@ final class DocumentMetadataTest extends TestCase
             idProperty: 'id',
         );
 
-        self::assertSame('name', $metadata->propertyPathToFieldPath('name'));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "name" is not mapped under "<root>"');
+
+        $metadata->propertyPathToFieldPath('name');
     }
 
-    public function testPropertyPathToFieldPathWithoutMappingNested(): void
+    public function testPropertyPathToFieldPathWithoutMappingNestedThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -34,7 +38,10 @@ final class DocumentMetadataTest extends TestCase
             idProperty: 'id',
         );
 
-        self::assertSame('a.b.c', $metadata->propertyPathToFieldPath('a.b.c'));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "a" is not mapped under "<root>"');
+
+        $metadata->propertyPathToFieldPath('a.b.c');
     }
 
     public function testPropertyPathToFieldPathWithMapping(): void
@@ -69,7 +76,7 @@ final class DocumentMetadataTest extends TestCase
         self::assertSame('_address._street', $metadata->propertyPathToFieldPath('address.street'));
     }
 
-    public function testPropertyPathToFieldPathWithPartialNestedMapping(): void
+    public function testPropertyPathToFieldPathWithPartialNestedMappingThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -81,7 +88,10 @@ final class DocumentMetadataTest extends TestCase
             ],
         );
 
-        self::assertSame('_address.street', $metadata->propertyPathToFieldPath('address.street'));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "street" is not mapped under "address"');
+
+        $metadata->propertyPathToFieldPath('address.street');
     }
 
     public function testPropertyPathToFieldPathWithDeeplyNestedMapping(): void
@@ -103,7 +113,7 @@ final class DocumentMetadataTest extends TestCase
         self::assertSame('_a._b._c', $metadata->propertyPathToFieldPath('a.b.c'));
     }
 
-    public function testPropertyPathToFieldPathUnmappedFieldPassedThrough(): void
+    public function testPropertyPathToFieldPathUnmappedFieldThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -113,10 +123,13 @@ final class DocumentMetadataTest extends TestCase
             fields: [],
         );
 
-        self::assertSame('unknown', $metadata->propertyPathToFieldPath('unknown'));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "unknown" is not mapped under "<root>"');
+
+        $metadata->propertyPathToFieldPath('unknown');
     }
 
-    public function testMapFilterWithoutMapping(): void
+    public function testMapFilterWithoutMappingThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -125,7 +138,10 @@ final class DocumentMetadataTest extends TestCase
             idProperty: 'id',
         );
 
-        self::assertSame(['name' => 'foo'], $metadata->mapFilterToFieldPaths(['name' => 'foo']));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "name" is not mapped under "<root>"');
+
+        $metadata->mapFilterToFieldPaths(['name' => 'foo']);
     }
 
     public function testMapFilterWithMapping(): void
@@ -326,7 +342,7 @@ final class DocumentMetadataTest extends TestCase
         );
     }
 
-    public function testMapSortingWithoutMapping(): void
+    public function testMapSortingWithoutMappingThrowsException(): void
     {
         $metadata = new DocumentMetadata(
             className: stdClass::class,
@@ -335,7 +351,10 @@ final class DocumentMetadataTest extends TestCase
             idProperty: 'id',
         );
 
-        self::assertSame(['name' => 1], $metadata->mapSortingToFieldPaths(['name' => 'asc']));
+        $this->expectException(UnknownPropertyPath::class);
+        $this->expectExceptionMessage('segment "name" is not mapped under "<root>"');
+
+        $metadata->mapSortingToFieldPaths(['name' => 'asc']);
     }
 
     public function testMapSortingAscWithMapping(): void
