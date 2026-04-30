@@ -18,8 +18,7 @@ final class DocumentHydrator implements HydratorWithContext
         private readonly HydratorWithContext $hydrator,
         private readonly DocumentMetadata $documentMetadata,
     ) {
-        $idProperty = $this->documentMetadata->idProperty;
-        $this->fieldNameOverride = $this->documentMetadata->fields[$idProperty]->fieldNameOverride;
+        $this->fieldNameOverride = $this->documentMetadata->fields[$this->documentMetadata->idProperty]->fieldNameOverride;
     }
 
     /**
