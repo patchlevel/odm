@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Repository;
 
 use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\ODM\Hydrator\DocumentHydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\Rango\Collection;
 use Patchlevel\Rango\Database;
@@ -23,12 +24,15 @@ final readonly class RangoRepository implements Repository
 {
     private Collection $collection;
 
+    private DocumentHydrator $hydrator;
+
     /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        private HydratorWithContext $hydrator,
+        HydratorWithContext $hydrator,
     ) {
+        $this->hydrator = new DocumentHydrator($hydrator, $metadata);
         $this->collection = $this->database->getCollection($this->metadata->collection);
     }
 
@@ -43,10 +47,7 @@ final readonly class RangoRepository implements Repository
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
-                $data = $this->hydrator->extract(
-                    $object,
-                    [DocumentMetadata::class => $this->metadata],
-                );
+                $data = $this->hydrator->extract($object);
 
                 $this->collection->insertOne($data);
 
@@ -60,10 +61,7 @@ final readonly class RangoRepository implements Repository
                             throw new WrongClass($this->metadata->className, $object::class);
                         }
 
-                        return $this->hydrator->extract(
-                            $object,
-                            [DocumentMetadata::class => $this->metadata],
-                        );
+                        return $this->hydrator->extract($object);
                     },
                     $objects,
                 ),
@@ -87,10 +85,7 @@ final readonly class RangoRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            $data = $this->hydrator->extract($object);
 
             $this->collection->updateOne(['_id' => $data['_id']], ['$set' => $data]);
 
@@ -102,10 +97,7 @@ final readonly class RangoRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            $data = $this->hydrator->extract($object);
 
             return [
                 'updateOne' => [
@@ -146,11 +138,7 @@ final readonly class RangoRepository implements Repository
             return null;
         }
 
-        return $this->hydrator->hydrate(
-            $this->metadata->className,
-            $data,
-            [DocumentMetadata::class => $this->metadata],
-        );
+        return $this->hydrator->hydrate($this->metadata->className, $data);
     }
 
     public function remove(string ...$id): void
@@ -170,11 +158,7 @@ final readonly class RangoRepository implements Repository
         $cursor = $this->collection->find();
 
         foreach ($cursor as $document) {
-            yield $this->hydrator->hydrate(
-                $this->metadata->className,
-                $document,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            yield $this->hydrator->hydrate($this->metadata->className, $document);
         }
     }
 
@@ -210,11 +194,7 @@ final readonly class RangoRepository implements Repository
         );
 
         foreach ($cursor as $document) {
-            yield $this->hydrator->hydrate(
-                $this->metadata->className,
-                $document,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            yield $this->hydrator->hydrate($this->metadata->className, $document);
         }
     }
 
@@ -238,11 +218,7 @@ final readonly class RangoRepository implements Repository
             return null;
         }
 
-        return $this->hydrator->hydrate(
-            $this->metadata->className,
-            $data,
-            [DocumentMetadata::class => $this->metadata],
-        );
+        return $this->hydrator->hydrate($this->metadata->className, $data);
     }
 
     public function count(): int

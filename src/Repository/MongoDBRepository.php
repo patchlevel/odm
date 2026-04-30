@@ -8,6 +8,7 @@ use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\Exception\ServerException;
 use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\ODM\Hydrator\DocumentHydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_map;
@@ -24,12 +25,15 @@ final readonly class MongoDBRepository implements Repository
 {
     private Collection $collection;
 
+    private DocumentHydrator $hydrator;
+
     /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        private HydratorWithContext $hydrator,
+        HydratorWithContext $hydrator,
     ) {
+        $this->hydrator = new DocumentHydrator($hydrator, $metadata);
         $this->collection = $this->database->selectCollection($this->metadata->collection);
     }
 
@@ -44,10 +48,7 @@ final readonly class MongoDBRepository implements Repository
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
-                $data = $this->hydrator->extract(
-                    $object,
-                    [DocumentMetadata::class => $this->metadata],
-                );
+                $data = $this->hydrator->extract($object);
                 $this->collection->insertOne($data);
 
                 return;
@@ -58,10 +59,7 @@ final readonly class MongoDBRepository implements Repository
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
-                return $this->hydrator->extract(
-                    $object,
-                    [DocumentMetadata::class => $this->metadata],
-                );
+                return $this->hydrator->extract($object);
             }, $objects));
         } catch (ServerException $e) {
             throw new InsertionFailed($e->getMessage(), $e->getCode(), $e);
@@ -82,10 +80,7 @@ final readonly class MongoDBRepository implements Repository
                 throw new WrongClass($this->metadata->className, $object::class);
             }
 
-            $data = $this->hydrator->extract(
-                $object,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            $data = $this->hydrator->extract($object);
 
             $this->collection->updateOne(['_id' => $data['_id']], ['$set' => $data]);
 
@@ -98,7 +93,7 @@ final readonly class MongoDBRepository implements Repository
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
-                $data = $this->hydrator->extract($object, [DocumentMetadata::class => $this->metadata]);
+                $data = $this->hydrator->extract($object);
 
                 return [
                     'updateOne' => [
@@ -143,11 +138,7 @@ final readonly class MongoDBRepository implements Repository
             return null;
         }
 
-        return $this->hydrator->hydrate(
-            $this->metadata->className,
-            $data,
-            [DocumentMetadata::class => $this->metadata],
-        );
+        return $this->hydrator->hydrate($this->metadata->className, $data);
     }
 
     public function remove(string ...$id): void
@@ -169,11 +160,7 @@ final readonly class MongoDBRepository implements Repository
         ]);
 
         foreach ($cursor as $document) {
-            yield $this->hydrator->hydrate(
-                $this->metadata->className,
-                $document,
-                [DocumentMetadata::class => $this->metadata],
-            );
+            yield $this->hydrator->hydrate($this->metadata->className, $document);
         }
     }
 
@@ -211,7 +198,6 @@ final readonly class MongoDBRepository implements Repository
             yield $this->hydrator->hydrate(
                 $this->metadata->className,
                 $document,
-                [DocumentMetadata::class => $this->metadata],
             );
         }
     }
@@ -239,11 +225,7 @@ final readonly class MongoDBRepository implements Repository
             return null;
         }
 
-        return $this->hydrator->hydrate(
-            $this->metadata->className,
-            $data,
-            [DocumentMetadata::class => $this->metadata],
-        );
+        return $this->hydrator->hydrate($this->metadata->className, $data);
     }
 
     public function count(): int

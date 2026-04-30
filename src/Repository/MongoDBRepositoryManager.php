@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Repository;
 
 use MongoDB\Client;
-use Patchlevel\Hydrator\CoreExtension;
-use Patchlevel\Hydrator\Extension;
 use Patchlevel\Hydrator\HydratorWithContext;
-use Patchlevel\Hydrator\StackHydratorBuilder;
-use Patchlevel\ODM\Hydrator\ODMExtension;
+use Patchlevel\Hydrator\StackHydrator;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\StackHydratorFieldMappingResolver;
@@ -51,19 +48,10 @@ final class MongoDBRepositoryManager implements RepositoryManager
         return $this->repositories[$documentClass];
     }
 
-    /** @param list<Extension> $extensions */
-    public static function create(Client $client, array $extensions = []): self
-    {
-        $builder = (new StackHydratorBuilder())
-            ->useExtension(new CoreExtension())
-            ->useExtension(new ODMExtension());
-
-        foreach ($extensions as $extension) {
-            $builder->useExtension($extension);
-        }
-
-        $hydrator = $builder->build();
-
+    public static function create(
+        Client $client,
+        StackHydrator $hydrator = new StackHydrator(),
+    ): self {
         $metadataFactory = new AttributeDocumentMetadataFactory(
             new StackHydratorFieldMappingResolver($hydrator),
         );

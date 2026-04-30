@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Method Patchlevel\\ODM\\Hydrator\\DocumentHydrator\:\:__construct\(\) has parameter \$documentMetadata with generic class Patchlevel\\ODM\\Metadata\\DocumentMetadata but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Hydrator/DocumentHydrator.php
+
+		-
 			message: '#^Parameter \#1 \$data of method Patchlevel\\ODM\\Hydrator\\MongoDBCipherKeyStore\:\:hydrate\(\) expects array\{_id\: string, subject_id\: string, key\: non\-empty\-string, method\: non\-empty\-string, created_at\: string\}, array\|object given\.$#'
 			identifier: argument.type
 			count: 2
@@ -73,13 +79,13 @@ parameters:
 			path: src/Repository/MongoDBRepository.php
 
 		-
-			message: '#^Parameter \#2 \$data of method Patchlevel\\Hydrator\\HydratorWithContext\:\:hydrate\(\) expects array\<string, mixed\>, array\|object given\.$#'
+			message: '#^Parameter \#2 \$data of method Patchlevel\\ODM\\Hydrator\\DocumentHydrator\:\:hydrate\(\) expects array\<string, mixed\>, array\|object given\.$#'
 			identifier: argument.type
 			count: 2
 			path: src/Repository/MongoDBRepository.php
 
 		-
-			message: '#^Parameter \#2 \$data of method Patchlevel\\Hydrator\\HydratorWithContext\:\:hydrate\(\) expects array\<string, mixed\>, array\|object\|null given\.$#'
+			message: '#^Parameter \#2 \$data of method Patchlevel\\ODM\\Hydrator\\DocumentHydrator\:\:hydrate\(\) expects array\<string, mixed\>, array\|object\|null given\.$#'
 			identifier: argument.type
 			count: 2
 			path: src/Repository/MongoDBRepository.php

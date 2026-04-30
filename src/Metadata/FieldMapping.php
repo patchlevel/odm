@@ -10,6 +10,7 @@ final readonly class FieldMapping
     public function __construct(
         public string $fieldName,
         public array $children = [],
+        public string|null $fieldNameOverride = null,
     ) {
     }
 }

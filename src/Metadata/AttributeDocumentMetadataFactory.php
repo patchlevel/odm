@@ -49,13 +49,13 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         $idProperty = $this->getIdProperty($reflection);
 
         foreach ($reflection->getProperties() as $reflectionProperty) {
+            $field = $this->fieldResolver?->resolve($reflectionProperty);
+
             if ($idProperty === $reflectionProperty->getName()) {
-                $fields[$reflectionProperty->getName()] = new FieldMapping('_id');
+                $fields[$reflectionProperty->getName()] = new FieldMapping('_id', [], $field?->fieldName);
 
                 continue;
             }
-
-            $field = $this->fieldResolver?->resolve($reflectionProperty);
 
             if (!$field) {
                 continue;
