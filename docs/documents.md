@@ -32,6 +32,12 @@ A document needs exactly one `#[Id]` property. The library throws `NoIdPropertyF
 present and `MultipleIdPropertiesFound` when more than one property is marked.
 :::
 
+:::note
+The `#[Document]` attribute also takes an optional second argument to store the document in a specific
+[database](databases.md), for example `#[Document('profiles', database: 'analytics')]`. Otherwise the
+document lives in the manager's default database.
+:::
+
 ## Identifiers
 
 The identifier is a string. The ODM always stores it under the reserved `_id` field, regardless of
@@ -43,24 +49,6 @@ $repository->insert(new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php'
 
 $profile = $repository->get('r-1');
 ```
-## Choosing a database
-
-By default a document lives in the manager's default database. You can pin a document to a specific
-database with the second argument of `#[Document]`, which is useful when you spread collections
-across several databases.
-
-```php
-#[Document('profiles', database: 'analytics')]
-final class Profile
-{
-    // ...
-}
-```
-:::note
-The default database differs per backend (`public` for PostgreSQL, `default` for MongoDB). The
-[databases](databases.md) page explains how the default is resolved.
-:::
-
 ## Property values
 
 Properties are mapped by the [hydrator](https://github.com/patchlevel/hydrator/). Scalars, enums,
@@ -159,3 +147,4 @@ your collections stay in sync with the document definitions.
 * [How to store and load documents](repository.md)
 * [How to control field names and normalization](field-mapping.md)
 * [How to query documents efficiently](repository.md#querying)
+* [How to choose a database backend](databases.md)

@@ -1,19 +1,23 @@
 # Getting Started
 
 This guide walks you through a complete example: you define a `Profile` document, set up a
-repository manager, and then insert, load, query, update and remove documents. The example uses
-PostgreSQL through [Rango](databases.md), but every step works the same way on MongoDB.
+repository manager, and then insert, load, query, update and remove documents. Only the initial
+setup differs between MongoDB and PostgreSQL; every step after it is identical on both.
 
 ## Installation
 
-Install the library together with the driver for your database:
+Install the library together with the driver for your backend.
+
+For PostgreSQL via [Rango](databases.md):
 
 ```bash
 composer require patchlevel/odm patchlevel/rango
 ```
-:::note
-For MongoDB, require `mongodb/mongodb` instead. The [databases](databases.md) page explains both setups.
-:::
+For MongoDB:
+
+```bash
+composer require patchlevel/odm mongodb/mongodb
+```
 
 ## Define a document
 
@@ -66,7 +70,10 @@ attribute is a custom normalizer. Both are explained on the [field mapping](fiel
 ## Set up the repository manager
 
 The repository manager creates and caches one repository per document class. Build it with the
-static `create()` factory and pass your database client.
+static `create()` factory and pass your database client. Pick the manager for your backend; the
+repository you get back behaves the same either way.
+
+For PostgreSQL via Rango:
 
 ```php
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
@@ -75,12 +82,22 @@ use Patchlevel\Rango\Client;
 $client = new Client($_ENV['POSTGRES_URI']);
 
 $manager = RangoRepositoryManager::create($client);
+```
+For MongoDB:
+
+```php
+use MongoDB\Client;
+use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
+
+$client = new Client($_ENV['MONGODB_URI']);
+
+$manager = MongoDBRepositoryManager::create($client);
+```
+From here on the code is the same for both backends:
+
+```php
 $repository = $manager->get(Profile::class);
 ```
-:::tip
-On MongoDB you use `MongoDBRepositoryManager` with a `MongoDB\Client`. The API of the resulting
-repository is identical. See the [databases](databases.md) page.
-:::
 
 ## Create the collection
 

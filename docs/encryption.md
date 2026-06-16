@@ -45,7 +45,10 @@ encrypted data became unreadable.
 ## Setting up the hydrator
 
 Encryption is configured on the hydrator, which you then pass to the repository manager's `create()`
-factory. Build the hydrator with the `CryptographyExtension` and a key store for your backend.
+factory. Build the hydrator with the `CryptographyExtension` and the key store for your backend. Each
+backend ships its own key store; the rest of the setup is the same.
+
+For PostgreSQL via Rango:
 
 ```php
 use Patchlevel\Hydrator\Extension\Cryptography\BaseCryptographer;
@@ -66,9 +69,30 @@ $hydrator = (new StackHydratorBuilder())
 
 $manager = RangoRepositoryManager::create($client, $hydrator);
 ```
+For MongoDB:
+
+```php
+use MongoDB\Client;
+use Patchlevel\Hydrator\Extension\Cryptography\BaseCryptographer;
+use Patchlevel\Hydrator\Extension\Cryptography\CryptographyExtension;
+use Patchlevel\Hydrator\StackHydratorBuilder;
+use Patchlevel\ODM\Hydrator\MongoDBCipherKeyStore;
+use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
+
+$client = new Client($_ENV['MONGODB_URI']);
+
+$keyStore = new MongoDBCipherKeyStore($client->selectDatabase('default'));
+$cryptographer = BaseCryptographer::createWithOpenssl($keyStore);
+
+$hydrator = (new StackHydratorBuilder())
+    ->useExtension(new CryptographyExtension($cryptographer))
+    ->build();
+
+$manager = MongoDBRepositoryManager::create($client, $hydrator);
+```
 :::note
-On MongoDB use `MongoDBCipherKeyStore` with a `MongoDB\Database` and `MongoDBRepositoryManager`. The
-rest of the setup is identical. See the [databases](databases.md) page.
+The cipher key store is the only backend-specific part. The `#[DataSubjectId]` and `#[SensitiveData]`
+attributes and everything else work the same on both.
 :::
 
 ## Storing and loading

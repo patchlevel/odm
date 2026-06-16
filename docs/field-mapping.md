@@ -147,7 +147,7 @@ final readonly class Skill
 ```
 :::tip
 The hydrator ships normalizers for enums, dates and arrays out of the box. See the
-[hydrator documentation](https://github.com/patchlevel/hydrator/) for the full list.
+[hydrator documentation](https://patchlevel.dev/docs/hydrator/latest) for the full list.
 :::
 
 ## Learn more

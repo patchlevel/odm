@@ -1,21 +1,26 @@
 # Repository
 
-A repository stores and loads documents of a single type. You obtain one from the repository manager
-by passing the document class. The manager creates the repository on first use and caches it, so
-calling `get()` repeatedly returns the same instance.
+A repository stores and loads documents of a single type. You obtain one from a
+[repository manager](databases.md) by passing the document class. The manager creates the repository
+on first use and caches it, so calling `get()` repeatedly returns the same instance.
+
+The manager you pick depends on your backend, but the repository it returns exposes the same methods
+on both MongoDB and PostgreSQL:
 
 ```php
+use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
-use Patchlevel\Rango\Client;
 
-$client = new Client($_ENV['POSTGRES_URI']);
+// PostgreSQL via Rango
+$manager = RangoRepositoryManager::create($rangoClient);
 
-$manager = RangoRepositoryManager::create($client);
+// MongoDB
+$manager = MongoDBRepositoryManager::create($mongoClient);
+
 $repository = $manager->get(Profile::class);
 ```
 :::note
-The manager is backend specific. Use `MongoDBRepositoryManager` for MongoDB. The resulting
-repository exposes the same methods either way. See the [databases](databases.md) page.
+See the [databases](databases.md) page for how to create the client and manager for each backend.
 :::
 
 ## No Unit of Work
@@ -127,8 +132,8 @@ $result = iterator_to_array(
 );
 ```
 :::tip
-The same operators work on both backends, because the PostgreSQL layer
-[Rango](https://github.com/patchlevel/rango/) mirrors the MongoDB query API.
+The same operators work on both backends, because MongoDB and
+[Rango](https://github.com/patchlevel/rango/) share the same query API.
 :::
 
 ### Sorting

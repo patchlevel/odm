@@ -5,6 +5,11 @@ Patchlevel ODM runs on two backends: MongoDB and PostgreSQL through
 Both managers implement the same interface and hand you repositories with an identical API, so your
 documents and your application code stay the same across backends.
 
+:::note
+Both backends expose the same query API, so the [filter operators](repository.md#querying) and
+[index definitions](documents.md#indexes) you write work the same on either one.
+:::
+
 ## PostgreSQL via Rango
 
 Require the Rango package and build a `RangoRepositoryManager` from a Rango client. The default
@@ -19,6 +24,7 @@ $client = new Client($_ENV['POSTGRES_URI']);
 $manager = RangoRepositoryManager::create($client);
 $repository = $manager->get(Profile::class);
 ```
+
 ## MongoDB
 
 Require `mongodb/mongodb` and build a `MongoDBRepositoryManager` from a MongoDB client. The default
@@ -33,10 +39,6 @@ $client = new Client($_ENV['MONGODB_URI']);
 $manager = MongoDBRepositoryManager::create($client);
 $repository = $manager->get(Profile::class);
 ```
-:::note
-Rango mirrors the MongoDB query API, so the [filter operators](repository.md#querying) and
-[index definitions](documents.md#indexes) you write work the same on both backends.
-:::
 
 ## Choosing the database
 
