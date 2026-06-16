@@ -2,14 +2,16 @@
   "name": "patchlevel/odm",
   "type": "library",
   "license": "MIT",
-  "description": "A simple ODM for MongoDB and Postgres",
+  "description": "A lightweight Object Document Mapper for PHP that runs on both MongoDB and PostgreSQL with one consistent API",
   "keywords": [
+    "patchlevel",
+    "odm",
     "mongodb",
     "postgres",
     "rango",
     "hydrator"
   ],
-  "homepage": "https://github.com/patchlevel/odm",
+  "homepage": "https://patchlevel.dev/docs/odm/latest",
   "authors": [
     {
       "name": "Daniel Badura",
@@ -35,7 +37,8 @@
     "phpstan/phpstan": "^2.1.46",
     "phpstan/phpstan-phpunit": "^2.0.16",
     "phpunit/phpunit": "^11.5.55",
-    "symfony/var-dumper": "^v7.4.8 || ^v8.0.0"
+    "symfony/var-dumper": "^v7.4.8 || ^v8.0.0",
+    "wnx/commonmark-markdown-renderer": "^1.6"
   },
   "config": {
     "preferred-install": {

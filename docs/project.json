@@ -1,0 +1,21 @@
+{
+  "navigation": [
+    { "title": "Introduction", "file": "introduction.md" },
+    { "title": "Getting Started", "file": "getting-started.md" },
+    {
+      "title": "Basics",
+      "subEntries": [
+        { "title": "Documents", "file": "documents.md" },
+        { "title": "Repository", "file": "repository.md" }
+      ]
+    },
+    {
+      "title": "Advanced",
+      "subEntries": [
+        { "title": "Field Mapping", "file": "field-mapping.md" },
+        { "title": "Encryption", "file": "encryption.md" },
+        { "title": "Databases", "file": "databases.md" }
+      ]
+    }
+  ]
+}
