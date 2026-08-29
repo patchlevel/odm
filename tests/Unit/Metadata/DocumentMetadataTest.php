@@ -437,4 +437,45 @@ final class DocumentMetadataTest extends TestCase
 
         self::assertSame([], $metadata->mapSortingToFieldPaths([]));
     }
+
+    public function testReadAndWriteVersionWithoutVersionProperty(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+        );
+
+        $document = new stdClass();
+
+        self::assertNull($metadata->readVersion($document));
+
+        $metadata->writeVersion($document, 5);
+
+        self::assertObjectNotHasProperty('version', $document);
+    }
+
+    public function testReadAndWriteVersion(): void
+    {
+        $document = new class {
+            public int $version = 3;
+        };
+
+        $metadata = new DocumentMetadata(
+            className: $document::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+            versionProperty: 'version',
+            fields: ['version' => new FieldMapping('version')],
+        );
+
+        self::assertSame(3, $metadata->readVersion($document));
+
+        $metadata->writeVersion($document, 4);
+
+        self::assertSame(4, $document->version);
+        self::assertSame(4, $metadata->readVersion($document));
+    }
 }

@@ -61,6 +61,12 @@ parameters:
 			path: src/Metadata/StackHydratorFieldMappingResolver.php
 
 		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Repository/MongoDBRepository.php
+
+		-
 			message: '#^PHPDoc tag @return contains generic type MongoDB\\Collection\<array\<string, mixed\>\> but class MongoDB\\Collection is not generic\.$#'
 			identifier: generics.notGeneric
 			count: 1
@@ -73,7 +79,7 @@ parameters:
 			path: src/Repository/MongoDBRepository.php
 
 		-
-			message: '#^Parameter \#1 \$operations of method MongoDB\\Collection\:\:bulkWrite\(\) expects list\<array\{deleteMany\: array\{0\: array\|object, 1\?\: array\}\}\|array\{deleteOne\: array\{0\: array\|object, 1\?\: array\}\}\|array\{insertOne\: array\{array\|object\}\}\|array\{replaceOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateMany\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\{_id\: mixed\}, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
+			message: '#^Parameter \#1 \$operations of method MongoDB\\Collection\:\:bulkWrite\(\) expects list\<array\{deleteMany\: array\{0\: array\|object, 1\?\: array\}\}\|array\{deleteOne\: array\{0\: array\|object, 1\?\: array\}\}\|array\{insertOne\: array\{array\|object\}\}\|array\{replaceOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateMany\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\|array\{updateOne\: array\{0\: array\|object, 1\: array\|object, 2\?\: array\}\}\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\<string, mixed\>, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Repository/MongoDBRepository.php
@@ -103,13 +109,19 @@ parameters:
 			path: src/Repository/MongoDBRepositoryManager.php
 
 		-
+			message: '#^Cannot cast mixed to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Repository/RangoRepository.php
+
+		-
 			message: '#^Parameter \#1 \$documents of method Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\:\:insertMany\(\) expects list\<array\<string, mixed\>\>, array\<int\|string, array\<string, mixed\>\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Repository/RangoRepository.php
 
 		-
-			message: '#^Parameter \#1 \$operations of method Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\:\:bulkWrite\(\) expects list\<array\<string, list\<array\<string, mixed\>\>\>\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\{_id\: mixed\}, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
+			message: '#^Parameter \#1 \$operations of method Patchlevel\\Rango\\Collection\<array\<string, mixed\>\>\:\:bulkWrite\(\) expects list\<array\<string, list\<array\<string, mixed\>\>\>\>, non\-empty\-array\<int\|string, array\{updateOne\: array\{array\<string, mixed\>, array\{''\$set''\: array\<string, mixed\>\}\}\}\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Repository/RangoRepository.php
@@ -140,6 +152,12 @@ parameters:
 
 		-
 			message: '#^Cannot access offset ''name'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 4
+			path: tests/Integration/RepositoryTestCase.php
+
+		-
+			message: '#^Cannot access offset ''version'' on array\|object\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 3
 			path: tests/Integration/RepositoryTestCase.php

@@ -142,6 +142,53 @@ Run index synchronization as part of a deployment or migration step rather than 
 your collections stay in sync with the document definitions.
 :::
 
+## Versioning
+
+Mark an integer property with `#[Version]` to enable optimistic locking. The repository then guards
+every `update()` against concurrent writes: it only touches the document while the stored version
+still matches the one you loaded, and raises `OptimisticLockFailed` when another process changed or
+removed the document in the meantime.
+
+```php
+use Patchlevel\ODM\Attribute\Document;
+use Patchlevel\ODM\Attribute\Id;
+use Patchlevel\ODM\Attribute\Version;
+
+#[Document('profiles')]
+final class Profile
+{
+    public function __construct(
+        #[Id]
+        public readonly string $id,
+        public string $name,
+        #[Version]
+        public int $version = 0,
+    ) {
+    }
+}
+```
+A new document starts at whatever value the object carries, so give the property a default of `0`.
+On every successful `update()` the repository increments the stored version and writes the new value
+back onto the object, so you can keep updating the same instance in a long-running worker.
+
+:::warning
+The version property must not be `readonly`, because the repository writes the incremented version
+back after each update. A `readonly` version property throws `VersionPropertyIsReadonly` when the
+document metadata is built. Only one property may carry `#[Version]`; a second one throws
+`MultipleVersionPropertiesFound`.
+:::
+
+:::note
+The version field goes through the [field mapping](field-mapping.md) like any other property, so you
+can rename it with a `#[NormalizedName]` attribute.
+:::
+
+:::tip
+Adding `#[Version]` to a document that already has stored data? Backfill the version field on every
+existing document first, otherwise the first `update()` fails because the filter never matches a
+document without the field.
+:::
+
 ## Learn more
 
 * [How to store and load documents](repository.md)

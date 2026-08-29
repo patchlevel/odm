@@ -7,6 +7,7 @@ namespace Patchlevel\ODM\Metadata;
 use Patchlevel\ODM\Attribute\Document;
 use Patchlevel\ODM\Attribute\Id;
 use Patchlevel\ODM\Attribute\Index as IndexAttribute;
+use Patchlevel\ODM\Attribute\Version;
 use Patchlevel\ODM\Index;
 use ReflectionClass;
 
@@ -47,12 +48,19 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         $database = $attribute->database;
         $fields = [];
         $idProperty = $this->getIdProperty($reflection);
+        $versionProperty = $this->getVersionProperty($reflection);
 
         foreach ($reflection->getProperties() as $reflectionProperty) {
             $field = $this->fieldResolver?->resolve($reflectionProperty);
 
             if ($idProperty === $reflectionProperty->getName()) {
                 $fields[$reflectionProperty->getName()] = new FieldMapping('_id', [], $field?->fieldName);
+
+                continue;
+            }
+
+            if ($versionProperty === $reflectionProperty->getName()) {
+                $fields[$reflectionProperty->getName()] = $field ?? new FieldMapping($reflectionProperty->getName());
 
                 continue;
             }
@@ -71,6 +79,7 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
             $idProperty,
             $this->indexes($reflection),
             $fields,
+            $versionProperty,
         );
     }
 
@@ -122,5 +131,31 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         }
 
         return $idProperty;
+    }
+
+    /** @param ReflectionClass<object> $reflection */
+    private function getVersionProperty(ReflectionClass $reflection): string|null
+    {
+        $versionProperty = null;
+
+        foreach ($reflection->getProperties() as $reflectionProperty) {
+            $attributes = $reflectionProperty->getAttributes(Version::class);
+
+            if ($attributes === []) {
+                continue;
+            }
+
+            if ($versionProperty !== null) {
+                throw new MultipleVersionPropertiesFound($reflection->name);
+            }
+
+            if ($reflectionProperty->isReadOnly()) {
+                throw new VersionPropertyIsReadonly($reflection->name, $reflectionProperty->getName());
+            }
+
+            $versionProperty = $reflectionProperty->getName();
+        }
+
+        return $versionProperty;
     }
 }

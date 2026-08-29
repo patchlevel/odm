@@ -59,6 +59,14 @@ $profile->name = 'Rango Updated';
 
 $repository->update($profile);
 ```
+:::note
+When the document has a [`#[Version]` property](documents.md#versioning), `update()` throws
+`OptimisticLockFailed` if another process changed or removed it since you loaded it. Reload the
+document and reapply your change. In a batch `update()` the exception is raised when any document in
+the batch is stale, and documents earlier in the batch may already be written because there is no
+surrounding transaction.
+:::
+
 ## Loading by id
 
 `find()` returns the document or `null`. `get()` returns the document or throws `DocumentNotFound`

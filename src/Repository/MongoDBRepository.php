@@ -66,7 +66,7 @@ final readonly class MongoDBRepository implements Repository
         }
     }
 
-    /** @param list<T> ...$objects */
+    /** @param T ...$objects */
     public function update(object ...$objects): void
     {
         if (count($objects) === 0) {
@@ -74,36 +74,75 @@ final readonly class MongoDBRepository implements Repository
         }
 
         if (count($objects) === 1) {
-            $object = $objects[0];
+            $update = $this->prepareUpdate($objects[0]);
 
-            if ($object::class !== $this->metadata->className) {
-                throw new WrongClass($this->metadata->className, $object::class);
+            $result = $this->collection->updateOne($update['filter'], ['$set' => $update['set']]);
+
+            if ($update['newVersion'] !== null && $result->getMatchedCount() === 0) {
+                throw OptimisticLockFailed::forDocument(
+                    $this->metadata->className,
+                    (string)$update['set']['_id'],
+                    $update['newVersion'] - 1,
+                );
             }
 
-            $data = $this->hydrator->extract($object);
-
-            $this->collection->updateOne(['_id' => $data['_id']], ['$set' => $data]);
+            if ($update['newVersion'] !== null) {
+                $this->metadata->writeVersion($objects[0], $update['newVersion']);
+            }
 
             return;
         }
 
-        $this->collection->bulkWrite(array_map(
-            function (object $object): array {
-                if ($object::class !== $this->metadata->className) {
-                    throw new WrongClass($this->metadata->className, $object::class);
-                }
+        $updates = array_map(fn (object $object): array => $this->prepareUpdate($object), $objects);
 
-                $data = $this->hydrator->extract($object);
-
-                return [
-                    'updateOne' => [
-                        ['_id' => $data['_id']],
-                        ['$set' => $data],
-                    ],
-                ];
-            },
-            $objects,
+        $result = $this->collection->bulkWrite(array_map(
+            static fn (array $update): array => ['updateOne' => [$update['filter'], ['$set' => $update['set']]]],
+            $updates,
         ));
+
+        if ($this->metadata->versionField() !== null && $result->getMatchedCount() !== count($objects)) {
+            throw OptimisticLockFailed::forBatch(
+                $this->metadata->className,
+                count($objects),
+                $result->getMatchedCount(),
+            );
+        }
+
+        foreach ($updates as $index => $update) {
+            if ($update['newVersion'] === null) {
+                continue;
+            }
+
+            $this->metadata->writeVersion($objects[$index], $update['newVersion']);
+        }
+    }
+
+    /**
+     * @param T $object
+     *
+     * @return array{filter: array<string, mixed>, set: array<string, mixed>, newVersion: int|null}
+     */
+    private function prepareUpdate(object $object): array
+    {
+        if ($object::class !== $this->metadata->className) {
+            throw new WrongClass($this->metadata->className, $object::class);
+        }
+
+        $data = $this->hydrator->extract($object);
+        $currentVersion = $this->metadata->readVersion($object);
+
+        if ($currentVersion === null) {
+            return ['filter' => ['_id' => $data['_id']], 'set' => $data, 'newVersion' => null];
+        }
+
+        $versionField = (string)$this->metadata->versionField();
+        $data[$versionField] = $currentVersion + 1;
+
+        return [
+            'filter' => ['_id' => $data['_id'], $versionField => $currentVersion],
+            'set' => $data,
+            'newVersion' => $currentVersion + 1,
+        ];
     }
 
     /**
