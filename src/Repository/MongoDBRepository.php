@@ -44,7 +44,7 @@ final readonly class MongoDBRepository implements Repository
             if (count($objects) === 1) {
                 $object = $objects[0];
 
-                if ($object::class !== $this->metadata->className) {
+                if (!$object instanceof $this->metadata->className) {
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
@@ -55,7 +55,7 @@ final readonly class MongoDBRepository implements Repository
             }
 
             $this->collection->insertMany(array_map(function (object $object): array {
-                if ($object::class !== $this->metadata->className) {
+                if (!$object instanceof $this->metadata->className) {
                     throw new WrongClass($this->metadata->className, $object::class);
                 }
 
@@ -124,7 +124,7 @@ final readonly class MongoDBRepository implements Repository
      */
     private function prepareUpdate(object $object): array
     {
-        if ($object::class !== $this->metadata->className) {
+        if (!$object instanceof $this->metadata->className) {
             throw new WrongClass($this->metadata->className, $object::class);
         }
 
@@ -132,14 +132,18 @@ final readonly class MongoDBRepository implements Repository
         $currentVersion = $this->metadata->readVersion($object);
 
         if ($currentVersion === null) {
-            return ['filter' => ['_id' => $data['_id']], 'set' => $data, 'newVersion' => null];
+            return [
+                'filter' => $this->withDiscriminator(['_id' => $data['_id']]),
+                'set' => $data,
+                'newVersion' => null,
+            ];
         }
 
         $versionField = (string)$this->metadata->versionField();
         $data[$versionField] = $currentVersion + 1;
 
         return [
-            'filter' => ['_id' => $data['_id'], $versionField => $currentVersion],
+            'filter' => $this->withDiscriminator(['_id' => $data['_id'], $versionField => $currentVersion]),
             'set' => $data,
             'newVersion' => $currentVersion + 1,
         ];
@@ -169,7 +173,7 @@ final readonly class MongoDBRepository implements Repository
     /** @return T|null */
     public function find(string $id): object|null
     {
-        $data = $this->collection->findOne(['_id' => $id], [
+        $data = $this->collection->findOne($this->withDiscriminator(['_id' => $id]), [
             'typeMap' => ['root' => 'array', 'document' => 'array'],
         ]);
 
@@ -183,18 +187,18 @@ final readonly class MongoDBRepository implements Repository
     public function remove(string ...$id): void
     {
         if (count($id) === 1) {
-            $this->collection->deleteOne(['_id' => $id[0]]);
+            $this->collection->deleteOne($this->withDiscriminator(['_id' => $id[0]]));
 
             return;
         }
 
-        $this->collection->deleteMany(['_id' => ['$in' => $id]]);
+        $this->collection->deleteMany($this->withDiscriminator(['_id' => ['$in' => $id]]));
     }
 
     /** @return iterable<T> */
     public function findAll(): iterable
     {
-        $cursor = $this->collection->find([], [
+        $cursor = $this->collection->find($this->withDiscriminator([]), [
             'typeMap' => ['root' => 'array', 'document' => 'array'],
         ]);
 
@@ -231,7 +235,10 @@ final readonly class MongoDBRepository implements Repository
 
         $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
 
-        $cursor = $this->collection->find($this->metadata->mapFilterToFieldPaths($filter), $options);
+        $cursor = $this->collection->find(
+            $this->withDiscriminator($this->metadata->mapFilterToFieldPaths($filter)),
+            $options,
+        );
 
         foreach ($cursor as $document) {
             yield $this->hydrator->hydrate(
@@ -258,7 +265,10 @@ final readonly class MongoDBRepository implements Repository
             $options['sort'] = $this->metadata->mapSortingToFieldPaths($orderBy);
         }
 
-        $data = $this->collection->findOne($this->metadata->mapFilterToFieldPaths($filter), $options);
+        $data = $this->collection->findOne(
+            $this->withDiscriminator($this->metadata->mapFilterToFieldPaths($filter)),
+            $options,
+        );
 
         if ($data === null) {
             return null;
@@ -269,12 +279,35 @@ final readonly class MongoDBRepository implements Repository
 
     public function count(): int
     {
-        return $this->collection->countDocuments();
+        return $this->collection->countDocuments($this->metadata->discriminatorFilter());
     }
 
     public function has(string $id): bool
     {
-        return $this->collection->countDocuments(['_id' => $id]) > 0;
+        return $this->collection->countDocuments($this->withDiscriminator(['_id' => $id])) > 0;
+    }
+
+    /**
+     * Restricts a query to the discriminator values handled by this repository. Documents without
+     * inheritance and repositories for the hierarchy root are left untouched.
+     *
+     * @param array<string, mixed> $filter
+     *
+     * @return array<string, mixed>
+     */
+    private function withDiscriminator(array $filter): array
+    {
+        $discriminator = $this->metadata->discriminatorFilter();
+
+        if ($discriminator === []) {
+            return $filter;
+        }
+
+        if ($filter === []) {
+            return $discriminator;
+        }
+
+        return ['$and' => [$discriminator, $filter]];
     }
 
     public function database(): Database

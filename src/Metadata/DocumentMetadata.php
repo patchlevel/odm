@@ -10,7 +10,9 @@ use ReflectionProperty;
 use function array_is_list;
 use function array_keys;
 use function array_map;
+use function array_search;
 use function assert;
+use function count;
 use function explode;
 use function implode;
 use function is_array;
@@ -26,6 +28,8 @@ final readonly class DocumentMetadata
      * @param class-string<T>             $className
      * @param list<Index>                 $indexes
      * @param array<string, FieldMapping> $fields
+     * @param array<string, class-string> $discriminatorMap
+     * @param list<string>                $discriminatorValues
      */
     public function __construct(
         public string $className,
@@ -35,6 +39,9 @@ final readonly class DocumentMetadata
         public array $indexes = [],
         public array $fields = [],
         public string|null $versionProperty = null,
+        public string|null $discriminatorField = null,
+        public array $discriminatorMap = [],
+        public array $discriminatorValues = [],
     ) {
         $this->versionReflection = $versionProperty !== null
             ? new ReflectionProperty($className, $versionProperty)
@@ -79,6 +86,40 @@ final readonly class DocumentMetadata
     public function writeVersion(object $document, int $version): void
     {
         $this->versionReflection?->setValue($document, $version);
+    }
+
+    /** @return class-string|null */
+    public function classForDiscriminator(string $value): string|null
+    {
+        return $this->discriminatorMap[$value] ?? null;
+    }
+
+    /** @param class-string $class */
+    public function discriminatorForClass(string $class): string|null
+    {
+        $value = array_search($class, $this->discriminatorMap, true);
+
+        return $value === false ? null : $value;
+    }
+
+    /**
+     * Restricts a query to the discriminator values the current class covers. Returns an empty
+     * array for the hierarchy root (which spans every mapped value) and for documents without
+     * inheritance.
+     *
+     * @return array<string, mixed>
+     */
+    public function discriminatorFilter(): array
+    {
+        if ($this->discriminatorField === null) {
+            return [];
+        }
+
+        if (count($this->discriminatorValues) === count($this->discriminatorMap)) {
+            return [];
+        }
+
+        return [$this->discriminatorField => ['$in' => $this->discriminatorValues]];
     }
 
     public function propertyPathToFieldPath(string $propertyPath): string

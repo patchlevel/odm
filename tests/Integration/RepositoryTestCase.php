@@ -8,11 +8,15 @@ use Patchlevel\ODM\Repository\InsertionFailed;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 use Patchlevel\ODM\Repository\OptimisticLockFailed;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
+use Patchlevel\ODM\Repository\WrongClass;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Image;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Media;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Profile;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
 use Patchlevel\ODM\Tests\Integration\Fixtures\UniqueProfile;
 use Patchlevel\ODM\Tests\Integration\Fixtures\VersionedProfile;
+use Patchlevel\ODM\Tests\Integration\Fixtures\Video;
 use PHPUnit\Framework\TestCase;
 
 use function array_map;
@@ -589,5 +593,108 @@ abstract class RepositoryTestCase extends TestCase
         $this->expectException(OptimisticLockFailed::class);
 
         $repository->update($first, $second);
+    }
+
+    public function testInheritancePersistsAndLoadsPolymorphically(): void
+    {
+        $repository = $this->repositoryManager->get(Media::class);
+
+        $repository->insert(
+            new Image('m-1', 'Picture', 800),
+            new Video('m-2', 'Clip', 60),
+        );
+
+        $image = $repository->find('m-1');
+        $video = $repository->find('m-2');
+
+        self::assertInstanceOf(Image::class, $image);
+        self::assertSame(800, $image->width);
+        self::assertInstanceOf(Video::class, $video);
+        self::assertSame(60, $video->duration);
+
+        $raw = $repository->collection()->findOne(['_id' => 'm-1']);
+
+        self::assertNotNull($raw);
+        self::assertSame('image', $raw['_type']);
+    }
+
+    public function testInheritanceUpdateKeepsTheConcreteType(): void
+    {
+        $repository = $this->repositoryManager->get(Media::class);
+        $repository->insert(new Image('m-1', 'Picture', 800));
+
+        $repository->update(new Image('m-1', 'Better Picture', 1600));
+
+        $image = $repository->find('m-1');
+
+        self::assertInstanceOf(Image::class, $image);
+        self::assertSame('Better Picture', $image->title);
+        self::assertSame(1600, $image->width);
+    }
+
+    public function testInheritanceLeafRepositoryOnlySeesItsOwnType(): void
+    {
+        $this->repositoryManager->get(Media::class)->insert(
+            new Image('m-1', 'Picture', 800),
+            new Video('m-2', 'Clip', 60),
+            new Image('m-3', 'Another', 1024),
+        );
+
+        $imageRepository = $this->repositoryManager->get(Image::class);
+
+        self::assertSame(2, $imageRepository->count());
+        self::assertTrue($imageRepository->has('m-1'));
+        self::assertFalse($imageRepository->has('m-2'));
+        self::assertNull($imageRepository->find('m-2'));
+
+        $ids = array_map(
+            static fn (Image $image): string => $image->id,
+            iterator_to_array($imageRepository->findAll(), false),
+        );
+
+        self::assertSame(['m-1', 'm-3'], $ids);
+    }
+
+    public function testInheritanceLeafRepositoryRejectsAForeignType(): void
+    {
+        $imageRepository = $this->repositoryManager->get(Image::class);
+
+        $this->expectException(WrongClass::class);
+
+        $imageRepository->insert(new Video('m-1', 'Clip', 60));
+    }
+
+    public function testInheritanceFiltersByInheritedAndSubclassFields(): void
+    {
+        $repository = $this->repositoryManager->get(Media::class);
+
+        $repository->insert(
+            new Image('m-1', 'Picture', 800),
+            new Video('m-2', 'Picture', 60),
+        );
+
+        $byTitle = iterator_to_array($repository->findBy(['title' => 'Picture']), false);
+
+        self::assertCount(2, $byTitle);
+
+        $byWidth = $repository->findOneBy(['width' => 800]);
+
+        self::assertInstanceOf(Image::class, $byWidth);
+        self::assertSame('m-1', $byWidth->id);
+    }
+
+    public function testInheritanceRemoveViaLeafRepositoryIgnoresOtherTypes(): void
+    {
+        $this->repositoryManager->get(Media::class)->insert(
+            new Image('m-1', 'Picture', 800),
+            new Video('m-2', 'Clip', 60),
+        );
+
+        $this->repositoryManager->get(Image::class)->remove('m-1', 'm-2');
+
+        $mediaRepository = $this->repositoryManager->get(Media::class);
+
+        self::assertFalse($mediaRepository->has('m-1'));
+        self::assertTrue($mediaRepository->has('m-2'));
     }
 }

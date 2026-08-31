@@ -14,6 +14,52 @@ use stdClass;
 #[CoversClass(DocumentMetadata::class)]
 final class DocumentMetadataTest extends TestCase
 {
+    public function testDiscriminatorLookupsWithoutInheritance(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+        );
+
+        self::assertNull($metadata->classForDiscriminator('image'));
+        self::assertNull($metadata->discriminatorForClass(stdClass::class));
+        self::assertSame([], $metadata->discriminatorFilter());
+    }
+
+    public function testDiscriminatorLookupsResolveBothDirections(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+            discriminatorField: '_type',
+            discriminatorMap: ['thing' => stdClass::class],
+            discriminatorValues: ['thing'],
+        );
+
+        self::assertSame(stdClass::class, $metadata->classForDiscriminator('thing'));
+        self::assertSame('thing', $metadata->discriminatorForClass(stdClass::class));
+        self::assertNull($metadata->classForDiscriminator('other'));
+    }
+
+    public function testDiscriminatorFilterRestrictsAPartialHierarchy(): void
+    {
+        $metadata = new DocumentMetadata(
+            className: stdClass::class,
+            database: null,
+            collection: 'test',
+            idProperty: 'id',
+            discriminatorField: '_type',
+            discriminatorMap: ['a' => stdClass::class, 'b' => stdClass::class],
+            discriminatorValues: ['a'],
+        );
+
+        self::assertSame(['_type' => ['$in' => ['a']]], $metadata->discriminatorFilter());
+    }
+
     public function testPropertyPathToFieldPathWithoutMappingThrowsException(): void
     {
         $metadata = new DocumentMetadata(
