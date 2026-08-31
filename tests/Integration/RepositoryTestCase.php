@@ -8,6 +8,7 @@ use Patchlevel\ODM\Repository\InsertionFailed;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Profile;
+use Patchlevel\ODM\Tests\Integration\Fixtures\ProfileSummary;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
 use Patchlevel\ODM\Tests\Integration\Fixtures\UniqueProfile;
@@ -363,6 +364,41 @@ abstract class RepositoryTestCase extends TestCase
         $result = $repository->findOneBy(['name' => 'Foo']);
 
         self::assertNull($result);
+    }
+
+    public function testAggregateIntoView(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->collection()->insertOne([
+            '_id' => 'r-1',
+            'name' => 'Rango',
+            'status' => 'active',
+            'skills' => ['php'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-2',
+            'name' => 'Beans',
+            'status' => 'inactive',
+            'skills' => ['js'],
+        ]);
+        $repository->collection()->insertOne([
+            '_id' => 'r-3',
+            'name' => 'Elsa',
+            'status' => 'active',
+            'skills' => ['go'],
+        ]);
+
+        $views = iterator_to_array($repository->aggregate([
+            ['$match' => ['status' => 'active']],
+            ['$project' => ['name' => 1, 'status' => 1]],
+            ['$sort' => ['name' => 1]],
+        ], ProfileSummary::class), false);
+
+        self::assertCount(2, $views);
+        self::assertContainsOnlyInstancesOf(ProfileSummary::class, $views);
+        self::assertEquals(new ProfileSummary('Elsa', Status::ACTIVE), $views[0]);
+        self::assertEquals(new ProfileSummary('Rango', Status::ACTIVE), $views[1]);
     }
 
     public function testRemove(): void

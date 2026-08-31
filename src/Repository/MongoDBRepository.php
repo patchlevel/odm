@@ -27,6 +27,8 @@ final readonly class MongoDBRepository implements Repository
 
     private DocumentHydrator $hydrator;
 
+    private HydratorWithContext $viewHydrator;
+
     /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
@@ -34,6 +36,7 @@ final readonly class MongoDBRepository implements Repository
         HydratorWithContext $hydrator,
     ) {
         $this->hydrator = new DocumentHydrator($hydrator, $metadata);
+        $this->viewHydrator = $hydrator;
         $this->collection = $this->database->selectCollection($this->metadata->collection);
     }
 
@@ -226,6 +229,26 @@ final readonly class MongoDBRepository implements Repository
         }
 
         return $this->hydrator->hydrate($this->metadata->className, $data);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $pipeline
+     * @param class-string<V>            $into
+     *
+     * @return iterable<V>
+     *
+     * @template V of object
+     */
+    public function aggregate(array $pipeline, string $into): iterable
+    {
+        $cursor = $this->collection->aggregate($pipeline, [
+            'typeMap' => ['root' => 'array', 'document' => 'array'],
+        ]);
+
+        foreach ($cursor as $document) {
+            /** @var array<string, mixed> $document */
+            yield $this->viewHydrator->hydrate($into, $document);
+        }
     }
 
     public function count(): int

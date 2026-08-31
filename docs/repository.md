@@ -187,6 +187,49 @@ Every property in a filter or sort must exist on the document. An unknown path r
 `UnknownPropertyPath`, which lists the properties that are available at that level.
 :::
 
+## Aggregations
+
+`aggregate()` runs an aggregation pipeline against the collection and hydrates every result document
+into a class you choose. This gives you a read-only "view" model: a plain class shaped like the
+pipeline output, with no `#[Document]` attribute and no id.
+
+```php
+final readonly class SkillPopularity
+{
+    public function __construct(
+        public string $skill,
+        public int $count,
+    ) {
+    }
+}
+
+$views = iterator_to_array(
+    $repository->aggregate([
+        ['$unwind' => '$skills'],
+        ['$group' => ['_id' => '$skills', 'count' => ['$sum' => 1]]],
+        ['$project' => ['_id' => 0, 'skill' => '$_id', 'count' => 1]],
+        ['$sort' => ['skill' => 1]],
+    ], SkillPopularity::class),
+    false,
+);
+```
+
+Like `findBy()`, this returns a generator, so wrap it in `iterator_to_array()` when you need an
+array. Each document is hydrated with the same hydrator used for documents, so normalizers and value
+objects on the result class work as usual.
+
+:::warning
+Unlike `findBy()`, the pipeline is passed to the backend untouched. Its stages use the **stored
+field names**, not property names, and there is no mapping through the [field mapping](field-mapping.md).
+Shape the output with a `$project` stage so its keys match the properties of your result class.
+:::
+
+:::note
+MongoDB and [Rango](https://github.com/patchlevel/rango/) share a common subset of pipeline stages
+(`$match`, `$sort`, `$limit`, `$skip`, `$project`, `$unwind`, `$group`, `$lookup`). Stages or
+operators beyond that subset only work on MongoDB.
+:::
+
 ## Removing
 
 `remove()` deletes documents by id and accepts one or many ids.
