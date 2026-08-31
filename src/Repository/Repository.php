@@ -49,6 +49,16 @@ interface Repository
      */
     public function findOneBy(array $filter = [], array|null $orderBy = null): object|null;
 
+    /**
+     * @param list<array<string, mixed>> $pipeline
+     * @param class-string<V>            $into
+     *
+     * @return iterable<V>
+     *
+     * @template V of object
+     */
+    public function aggregate(array $pipeline, string $into): iterable;
+
     public function count(): int;
 
     public function has(string $id): bool;

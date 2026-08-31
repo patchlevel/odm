@@ -26,6 +26,8 @@ final readonly class RangoRepository implements Repository
 
     private DocumentHydrator $hydrator;
 
+    private HydratorWithContext $viewHydrator;
+
     /** @param DocumentMetadata<T> $metadata */
     public function __construct(
         private Database $database,
@@ -33,6 +35,7 @@ final readonly class RangoRepository implements Repository
         HydratorWithContext $hydrator,
     ) {
         $this->hydrator = new DocumentHydrator($hydrator, $metadata);
+        $this->viewHydrator = $hydrator;
         $this->collection = $this->database->getCollection($this->metadata->collection);
     }
 
@@ -219,6 +222,23 @@ final readonly class RangoRepository implements Repository
         }
 
         return $this->hydrator->hydrate($this->metadata->className, $data);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $pipeline
+     * @param class-string<V>            $into
+     *
+     * @return iterable<V>
+     *
+     * @template V of object
+     */
+    public function aggregate(array $pipeline, string $into): iterable
+    {
+        $cursor = $this->collection->aggregate($pipeline);
+
+        foreach ($cursor as $document) {
+            yield $this->viewHydrator->hydrate($into, $document);
+        }
     }
 
     public function count(): int
