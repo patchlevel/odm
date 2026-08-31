@@ -6,7 +6,8 @@
       "title": "Basics",
       "subEntries": [
         { "title": "Documents", "file": "documents.md" },
-        { "title": "Repository", "file": "repository.md" }
+        { "title": "Repository", "file": "repository.md" },
+        { "title": "Inheritance", "file": "inheritance.md" }
       ]
     },
     {

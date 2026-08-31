@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Metadata;
 
+use Patchlevel\ODM\Attribute\DiscriminatorMap;
 use Patchlevel\ODM\Attribute\Document;
 use Patchlevel\ODM\Attribute\Id;
 use Patchlevel\ODM\Attribute\Index as IndexAttribute;
 use Patchlevel\ODM\Attribute\Version;
 use Patchlevel\ODM\Index;
 use ReflectionClass;
+
+use function array_keys;
+use function array_unique;
+use function array_values;
+use function class_exists;
+use function is_a;
 
 final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 {
@@ -35,52 +42,164 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         }
 
         $reflection = new ReflectionClass($className);
+        $rootReflection = $this->documentReflection($reflection);
 
-        $attributes = $reflection->getAttributes(Document::class);
+        $attribute = $rootReflection->getAttributes(Document::class)[0]->newInstance();
 
-        if ($attributes === []) {
-            throw new ClassIsNotAnDocument($className);
-        }
-
-        $attribute = $attributes[0]->newInstance();
-
-        $collection = $attribute->collection;
-        $database = $attribute->database;
-        $fields = [];
         $idProperty = $this->getIdProperty($reflection);
         $versionProperty = $this->getVersionProperty($reflection);
 
-        foreach ($reflection->getProperties() as $reflectionProperty) {
-            $field = $this->fieldResolver?->resolve($reflectionProperty);
+        [$discriminatorField, $discriminatorMap] = $this->discriminator($rootReflection);
 
-            if ($idProperty === $reflectionProperty->getName()) {
-                $fields[$reflectionProperty->getName()] = new FieldMapping('_id', [], $field?->fieldName);
+        $fieldClasses = $discriminatorMap === []
+            ? [$className]
+            : array_values(array_unique([$rootReflection->getName(), ...array_values($discriminatorMap)]));
 
+        $discriminatorValues = [];
+
+        foreach ($discriminatorMap as $value => $mappedClass) {
+            if (!is_a($mappedClass, $className, true)) {
                 continue;
             }
 
-            if ($versionProperty === $reflectionProperty->getName()) {
-                $fields[$reflectionProperty->getName()] = $field ?? new FieldMapping($reflectionProperty->getName());
-
-                continue;
-            }
-
-            if (!$field) {
-                continue;
-            }
-
-            $fields[$reflectionProperty->getName()] = $field;
+            $discriminatorValues[] = $value;
         }
 
         return $this->metadataCache[$className] = new DocumentMetadata(
             $className,
-            $database,
-            $collection,
+            $attribute->database,
+            $attribute->collection,
             $idProperty,
-            $this->indexes($reflection),
-            $fields,
+            $this->indexes($rootReflection),
+            $this->resolveFields($rootReflection->getName(), $fieldClasses, $idProperty, $versionProperty),
             $versionProperty,
+            $discriminatorField,
+            $discriminatorMap,
+            $discriminatorValues,
         );
+    }
+
+    /**
+     * @param ReflectionClass<object> $reflection
+     *
+     * @return ReflectionClass<object>
+     */
+    private function documentReflection(ReflectionClass $reflection): ReflectionClass
+    {
+        $current = $reflection;
+
+        while ($current !== false) {
+            if ($current->getAttributes(Document::class) !== []) {
+                return $current;
+            }
+
+            $current = $current->getParentClass();
+        }
+
+        throw new ClassIsNotAnDocument($reflection->getName());
+    }
+
+    /**
+     * @param ReflectionClass<object> $rootReflection
+     *
+     * @return array{0: string|null, 1: array<string, class-string>}
+     */
+    private function discriminator(ReflectionClass $rootReflection): array
+    {
+        $attributes = $rootReflection->getAttributes(DiscriminatorMap::class);
+
+        if ($attributes === []) {
+            return [null, []];
+        }
+
+        $discriminator = $attributes[0]->newInstance();
+        $rootClass = $rootReflection->getName();
+
+        if ($discriminator->map === []) {
+            throw InvalidDiscriminatorMap::emptyMap($rootClass);
+        }
+
+        foreach ($discriminator->map as $value => $class) {
+            if (!class_exists($class)) {
+                throw InvalidDiscriminatorMap::classDoesNotExist($rootClass, $value, $class);
+            }
+
+            if (!is_a($class, $rootClass, true)) {
+                throw InvalidDiscriminatorMap::classIsNotASubtype($rootClass, $value, $class);
+            }
+        }
+
+        return [$discriminator->field, $discriminator->map];
+    }
+
+    /**
+     * @param class-string       $rootClass
+     * @param list<class-string> $classNames
+     *
+     * @return array<string, FieldMapping>
+     */
+    private function resolveFields(
+        string $rootClass,
+        array $classNames,
+        string $idProperty,
+        string|null $versionProperty,
+    ): array {
+        $fields = [];
+
+        foreach ($classNames as $className) {
+            $reflection = new ReflectionClass($className);
+
+            foreach ($reflection->getProperties() as $reflectionProperty) {
+                $name = $reflectionProperty->getName();
+                $field = $this->fieldResolver?->resolve($reflectionProperty);
+
+                if ($idProperty === $name) {
+                    $mapping = new FieldMapping('_id', [], $field?->fieldName);
+                } elseif ($versionProperty === $name) {
+                    $mapping = $field ?? new FieldMapping($name);
+                } elseif ($field !== null) {
+                    $mapping = $field;
+                } else {
+                    continue;
+                }
+
+                if (isset($fields[$name])) {
+                    if (!$this->fieldMappingEquals($fields[$name], $mapping)) {
+                        throw new DiscriminatorFieldConflict(
+                            $rootClass,
+                            $name,
+                            $fields[$name]->fieldName,
+                            $mapping->fieldName,
+                        );
+                    }
+
+                    continue;
+                }
+
+                $fields[$name] = $mapping;
+            }
+        }
+
+        return $fields;
+    }
+
+    private function fieldMappingEquals(FieldMapping $a, FieldMapping $b): bool
+    {
+        if ($a->fieldName !== $b->fieldName || $a->fieldNameOverride !== $b->fieldNameOverride) {
+            return false;
+        }
+
+        if (array_keys($a->children) !== array_keys($b->children)) {
+            return false;
+        }
+
+        foreach ($a->children as $key => $child) {
+            if (!$this->fieldMappingEquals($child, $b->children[$key])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

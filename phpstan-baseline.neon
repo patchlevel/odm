@@ -151,6 +151,12 @@ parameters:
 			path: tests/Integration/RepositoryTestCase.php
 
 		-
+			message: '#^Cannot access offset ''_type'' on array\|object\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: tests/Integration/RepositoryTestCase.php
+
+		-
 			message: '#^Cannot access offset ''name'' on array\|object\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 4

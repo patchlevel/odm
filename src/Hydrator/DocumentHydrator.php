@@ -8,6 +8,10 @@ use Patchlevel\Hydrator\ClassNotSupported;
 use Patchlevel\Hydrator\HydratorWithContext;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
+use function array_keys;
+use function array_values;
+use function is_string;
+
 final class DocumentHydrator implements HydratorWithContext
 {
     private const ID_FIELD_NAME = '_id';
@@ -39,6 +43,30 @@ final class DocumentHydrator implements HydratorWithContext
             unset($data[self::ID_FIELD_NAME]);
         }
 
+        $discriminatorField = $this->documentMetadata->discriminatorField;
+
+        if ($discriminatorField !== null) {
+            $value = $data[$discriminatorField] ?? null;
+
+            if (!is_string($value)) {
+                throw UnknownDiscriminatorValue::missing($this->documentMetadata->className, $discriminatorField);
+            }
+
+            $concreteClass = $this->documentMetadata->classForDiscriminator($value);
+
+            if ($concreteClass === null) {
+                throw UnknownDiscriminatorValue::notMapped(
+                    $this->documentMetadata->className,
+                    $discriminatorField,
+                    $value,
+                    array_keys($this->documentMetadata->discriminatorMap),
+                );
+            }
+
+            /** @var class-string<T> $class */
+            $class = $concreteClass;
+        }
+
         return $this->hydrator->hydrate($class, $data, $context);
     }
 
@@ -54,6 +82,21 @@ final class DocumentHydrator implements HydratorWithContext
         if ($this->fieldNameOverride) {
             $data[self::ID_FIELD_NAME] = $data[$this->fieldNameOverride];
             unset($data[$this->fieldNameOverride]);
+        }
+
+        $discriminatorField = $this->documentMetadata->discriminatorField;
+
+        if ($discriminatorField !== null) {
+            $value = $this->documentMetadata->discriminatorForClass($object::class);
+
+            if ($value === null) {
+                throw new ClassNotInDiscriminatorMap(
+                    $object::class,
+                    array_values($this->documentMetadata->discriminatorMap),
+                );
+            }
+
+            $data[$discriminatorField] = $value;
         }
 
         return $data;
