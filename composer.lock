@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "88c29c9b6bcb5f0d3df42fb8b427da5f",
+    "content-hash": "112c24c55f35d983c08b00da5d9901fc",
     "packages": [
         {
             "name": "patchlevel/hydrator",
@@ -2330,16 +2330,16 @@
         },
         {
             "name": "patchlevel/rango",
-            "version": "1.0.0-alpha.4",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/patchlevel/rango.git",
-                "reference": "dc7168f94cf664774b5bf64999486d328c6bc0b8"
+                "reference": "dbdcf80bf82b8678e8526226a36065cf07bfb572"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/rango/zipball/dc7168f94cf664774b5bf64999486d328c6bc0b8",
-                "reference": "dc7168f94cf664774b5bf64999486d328c6bc0b8",
+                "url": "https://api.github.com/repos/patchlevel/rango/zipball/dbdcf80bf82b8678e8526226a36065cf07bfb572",
+                "reference": "dbdcf80bf82b8678e8526226a36065cf07bfb572",
                 "shasum": ""
             },
             "require": {
@@ -2356,7 +2356,8 @@
                 "phpstan/phpstan": "^2.1.32",
                 "phpstan/phpstan-phpunit": "^2.0.8",
                 "phpunit/phpunit": "^11.5.17",
-                "symfony/var-dumper": "^6.4.0 || ^7.0.0 || ^8.0.0"
+                "symfony/var-dumper": "^6.4.0 || ^7.0.0 || ^8.0.0",
+                "wnx/commonmark-markdown-renderer": "^1.6"
             },
             "type": "library",
             "autoload": {
@@ -2378,17 +2379,21 @@
                     "email": "david.badura@patchlevel.de"
                 }
             ],
-            "description": "Rango",
-            "homepage": "https://github.com/patchlevel/hydrator",
+            "description": "A high-performance reimplementation of the MongoDB PHP API on top of PostgreSQL JSONB",
+            "homepage": "https://patchlevel.dev/docs/rango/latest",
             "keywords": [
+                "document database",
+                "jsonb",
                 "mongodb",
-                "postgres"
+                "patchlevel",
+                "postgres",
+                "postgresql"
             ],
             "support": {
                 "issues": "https://github.com/patchlevel/rango/issues",
-                "source": "https://github.com/patchlevel/rango/tree/1.0.0-alpha.4"
+                "source": "https://github.com/patchlevel/rango/tree/1.1.0"
             },
-            "time": "2026-04-09T12:17:35+00:00"
+            "time": "2026-08-31T12:23:12+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -6508,9 +6513,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "patchlevel/rango": 15
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
