@@ -6,6 +6,7 @@ namespace Patchlevel\ODM\Tests\Unit\Metadata;
 
 use Patchlevel\ODM\Attribute\Document;
 use Patchlevel\ODM\Attribute\Id;
+use Patchlevel\ODM\Attribute\Version;
 use Patchlevel\ODM\Index;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\ClassIsNotAnDocument;
@@ -13,7 +14,9 @@ use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\ODM\Metadata\FieldMapping;
 use Patchlevel\ODM\Metadata\FieldMappingResolver;
 use Patchlevel\ODM\Metadata\MultipleIdPropertiesFound;
+use Patchlevel\ODM\Metadata\MultipleVersionPropertiesFound;
 use Patchlevel\ODM\Metadata\NoIdPropertyFound;
+use Patchlevel\ODM\Metadata\VersionPropertyIsReadonly;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Address;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Profile;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -24,6 +27,8 @@ use ReflectionProperty;
 #[CoversClass(ClassIsNotAnDocument::class)]
 #[CoversClass(NoIdPropertyFound::class)]
 #[CoversClass(MultipleIdPropertiesFound::class)]
+#[CoversClass(MultipleVersionPropertiesFound::class)]
+#[CoversClass(VersionPropertyIsReadonly::class)]
 #[CoversClass(FieldMapping::class)]
 final class AttributeDocumentMetadataFactoryTest extends TestCase
 {
@@ -194,5 +199,107 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
         $metadata = $factory->metadata(Profile::class);
 
         self::assertEquals($expected, $metadata);
+    }
+
+    public function testMetadataWithoutVersionProperty(): void
+    {
+        $factory = new AttributeDocumentMetadataFactory();
+        $metadata = $factory->metadata(Profile::class);
+
+        self::assertNull($metadata->versionProperty);
+        self::assertNull($metadata->versionField());
+    }
+
+    public function testMetadataWithVersionProperty(): void
+    {
+        $class = new #[Document('rango_documents')]
+        class ('a') {
+            public function __construct(
+                #[Id]
+                public string $id,
+                #[Version]
+                public int $version = 0,
+            ) {
+            }
+        };
+
+        $factory = new AttributeDocumentMetadataFactory();
+        $metadata = $factory->metadata($class::class);
+
+        self::assertSame('version', $metadata->versionProperty);
+        self::assertSame('version', $metadata->versionField());
+        self::assertArrayHasKey('version', $metadata->fields);
+    }
+
+    public function testMetadataVersionPropertyUsesFieldResolver(): void
+    {
+        $class = new #[Document('rango_documents')]
+        class ('a') {
+            public function __construct(
+                #[Id]
+                public string $id,
+                #[Version]
+                public int $version = 0,
+            ) {
+            }
+        };
+
+        $fieldResolver = new class implements FieldMappingResolver
+        {
+            public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null
+            {
+                if ($reflectionProperty->getName() === 'version') {
+                    return new FieldMapping('_version', []);
+                }
+
+                return null;
+            }
+        };
+
+        $factory = new AttributeDocumentMetadataFactory($fieldResolver);
+        $metadata = $factory->metadata($class::class);
+
+        self::assertSame('version', $metadata->versionProperty);
+        self::assertSame('_version', $metadata->versionField());
+    }
+
+    public function testMetadataMultipleVersionProperties(): void
+    {
+        $class = new #[Document('rango_documents')]
+        class ('a') {
+            public function __construct(
+                #[Id]
+                public string $id,
+                #[Version]
+                public int $version = 0,
+                #[Version]
+                public int $revision = 0,
+            ) {
+            }
+        };
+
+        $factory = new AttributeDocumentMetadataFactory();
+        $this->expectException(MultipleVersionPropertiesFound::class);
+
+        $factory->metadata($class::class);
+    }
+
+    public function testMetadataReadonlyVersionProperty(): void
+    {
+        $class = new #[Document('rango_documents')]
+        class ('a', 0) {
+            public function __construct(
+                #[Id]
+                public string $id,
+                #[Version]
+                public readonly int $version,
+            ) {
+            }
+        };
+
+        $factory = new AttributeDocumentMetadataFactory();
+        $this->expectException(VersionPropertyIsReadonly::class);
+
+        $factory->metadata($class::class);
     }
 }

@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Metadata;
 
 use Patchlevel\ODM\Index;
+use ReflectionProperty;
 
 use function array_is_list;
 use function array_keys;
 use function array_map;
+use function assert;
 use function explode;
 use function implode;
 use function is_array;
+use function is_int;
 use function str_starts_with;
 
 /** @template T of object */
 final readonly class DocumentMetadata
 {
+    private ReflectionProperty|null $versionReflection;
+
     /**
      * @param class-string<T>             $className
      * @param list<Index>                 $indexes
@@ -29,7 +34,51 @@ final readonly class DocumentMetadata
         public string $idProperty,
         public array $indexes = [],
         public array $fields = [],
+        public string|null $versionProperty = null,
     ) {
+        $this->versionReflection = $versionProperty !== null
+            ? new ReflectionProperty($className, $versionProperty)
+            : null;
+    }
+
+    /**
+     * Storage field name of the version property, or null when the document is not versioned.
+     */
+    public function versionField(): string|null
+    {
+        if ($this->versionProperty === null) {
+            return null;
+        }
+
+        return $this->fields[$this->versionProperty]->fieldName;
+    }
+
+    /**
+     * Read the current version from the document, or null when it is not versioned.
+     *
+     * @param T $document
+     */
+    public function readVersion(object $document): int|null
+    {
+        if ($this->versionReflection === null) {
+            return null;
+        }
+
+        $version = $this->versionReflection->getValue($document);
+        assert(is_int($version));
+
+        return $version;
+    }
+
+    /**
+     * Write the incremented version back onto the document after a successful update. Does nothing
+     * when the document is not versioned.
+     *
+     * @param T $document
+     */
+    public function writeVersion(object $document, int $version): void
+    {
+        $this->versionReflection?->setValue($document, $version);
     }
 
     public function propertyPathToFieldPath(string $propertyPath): string

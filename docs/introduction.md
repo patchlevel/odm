@@ -17,6 +17,7 @@ fit for long-running worker processes.
 * [Repositories without a Unit of Work](repository.md) for predictable writes
 * [Querying](repository.md#querying) with filters, sorting and pagination
 * [Indexes](documents.md#indexes) defined with `#[Index]`, including unique constraints
+* [Optimistic locking](documents.md#versioning) with `#[Version]` to catch concurrent writes
 * [Field mapping and normalization](field-mapping.md) for nested objects and custom field names
 * [Encryption and crypto shredding](encryption.md) for sensitive data
 

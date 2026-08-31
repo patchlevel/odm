@@ -6,11 +6,13 @@ namespace Patchlevel\ODM\Tests\Integration;
 
 use Patchlevel\ODM\Repository\InsertionFailed;
 use Patchlevel\ODM\Repository\MongoDBRepositoryManager;
+use Patchlevel\ODM\Repository\OptimisticLockFailed;
 use Patchlevel\ODM\Repository\RangoRepositoryManager;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Profile;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Skill;
 use Patchlevel\ODM\Tests\Integration\Fixtures\Status;
 use Patchlevel\ODM\Tests\Integration\Fixtures\UniqueProfile;
+use Patchlevel\ODM\Tests\Integration\Fixtures\VersionedProfile;
 use PHPUnit\Framework\TestCase;
 
 use function array_map;
@@ -486,5 +488,106 @@ abstract class RepositoryTestCase extends TestCase
         $repository->insert(
             new UniqueProfile('r-1', 'Rango'),
         );
+    }
+
+    public function testInsertKeepsInitialVersion(): void
+    {
+        $repository = $this->repositoryManager->get(VersionedProfile::class);
+
+        $profile = new VersionedProfile('v-1', 'Rango');
+        $repository->insert($profile);
+
+        self::assertSame(0, $profile->version);
+
+        $raw = $repository->collection()->findOne(['_id' => 'v-1']);
+
+        self::assertNotNull($raw);
+        self::assertSame(0, $raw['version']);
+    }
+
+    public function testUpdateIncrementsVersion(): void
+    {
+        $repository = $this->repositoryManager->get(VersionedProfile::class);
+
+        $profile = new VersionedProfile('v-1', 'Rango');
+        $repository->insert($profile);
+
+        $profile->name = 'Rango Updated';
+        $repository->update($profile);
+
+        self::assertSame(1, $profile->version);
+
+        $raw = $repository->collection()->findOne(['_id' => 'v-1']);
+
+        self::assertNotNull($raw);
+        self::assertSame('Rango Updated', $raw['name']);
+        self::assertSame(1, $raw['version']);
+
+        $repository->update($profile);
+
+        self::assertSame(2, $profile->version);
+    }
+
+    public function testUpdateWithStaleVersionThrows(): void
+    {
+        $repository = $this->repositoryManager->get(VersionedProfile::class);
+
+        $repository->insert(new VersionedProfile('v-1', 'Rango'));
+
+        $stale = $repository->get('v-1');
+        $fresh = $repository->get('v-1');
+
+        $fresh->name = 'First writer wins';
+        $repository->update($fresh);
+
+        $stale->name = 'Second writer loses';
+
+        $this->expectException(OptimisticLockFailed::class);
+
+        $repository->update($stale);
+    }
+
+    public function testUpdateManyIncrementsVersions(): void
+    {
+        $repository = $this->repositoryManager->get(VersionedProfile::class);
+
+        $first = new VersionedProfile('v-1', 'Rango');
+        $second = new VersionedProfile('v-2', 'Beans');
+        $repository->insert($first, $second);
+
+        $first->name = 'Rango Updated';
+        $second->name = 'Beans Updated';
+        $repository->update($first, $second);
+
+        self::assertSame(1, $first->version);
+        self::assertSame(1, $second->version);
+
+        $r1 = $repository->collection()->findOne(['_id' => 'v-1']);
+        $r2 = $repository->collection()->findOne(['_id' => 'v-2']);
+
+        self::assertNotNull($r1);
+        self::assertNotNull($r2);
+        self::assertSame(1, $r1['version']);
+        self::assertSame(1, $r2['version']);
+    }
+
+    public function testUpdateManyWithStaleVersionThrows(): void
+    {
+        $repository = $this->repositoryManager->get(VersionedProfile::class);
+
+        $first = new VersionedProfile('v-1', 'Rango');
+        $second = new VersionedProfile('v-2', 'Beans');
+        $repository->insert($first, $second);
+
+        $concurrent = $repository->get('v-2');
+        $concurrent->name = 'Changed elsewhere';
+        $repository->update($concurrent);
+
+        $first->name = 'Rango Updated';
+        $second->name = 'Beans Updated';
+
+        $this->expectException(OptimisticLockFailed::class);
+
+        $repository->update($first, $second);
     }
 }

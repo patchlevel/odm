@@ -15,6 +15,7 @@ Unlike Doctrine ODM, Patchlevel ODM has **no Unit of Work**. Repositories contro
 * [Repositories without a Unit of Work](https://patchlevel.dev/docs/odm/latest/repository) for predictable writes
 * [Querying](https://patchlevel.dev/docs/odm/latest/repository#querying) with filters, sorting and pagination
 * [Indexes](https://patchlevel.dev/docs/odm/latest/documents#indexes) defined with `#[Index]`, including unique constraints
+* [Optimistic locking](https://patchlevel.dev/docs/odm/latest/documents#versioning) with `#[Version]` to catch concurrent writes
 * [Field mapping and normalization](https://patchlevel.dev/docs/odm/latest/field-mapping) for nested objects and custom field names
 * [Encryption and crypto shredding](https://patchlevel.dev/docs/odm/latest/encryption) for sensitive data
 
