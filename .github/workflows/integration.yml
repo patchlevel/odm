@@ -58,7 +58,7 @@ jobs:
                   ini-values: memory_limit=-1
                   extensions: pdo_pgsql,mongodb
 
-            - uses: ramsey/composer-install@3.1.1
+            - uses: ramsey/composer-install@4.0.0
               with:
                 dependency-versions: ${{ matrix.dependencies }}
                 composer-options: ${{ matrix.composer-options }}
@@ -107,7 +107,7 @@ jobs:
             ini-values: memory_limit=-1
             extensions: pdo_pgsql,mongodb
 
-        - uses: ramsey/composer-install@3.1.1
+        - uses: ramsey/composer-install@4.0.0
           with:
             dependency-versions: ${{ matrix.dependencies }}
             composer-options: ${{ matrix.composer-options }}
