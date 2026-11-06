@@ -7,7 +7,7 @@ namespace Patchlevel\ODM\Repository;
 use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\Exception\ServerException;
-use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\ODM\Hydrator\DocumentHydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
@@ -32,7 +32,7 @@ final readonly class MongoDBRepository implements Repository
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        HydratorWithContext $hydrator,
+        Hydrator $hydrator,
     ) {
         $this->hydrator = new DocumentHydrator($hydrator, $metadata);
         $this->collection = $this->database->selectCollection($this->metadata->collection);

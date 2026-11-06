@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace Patchlevel\ODM\Hydrator;
 
 use Patchlevel\Hydrator\ClassNotSupported;
-use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_keys;
 use function array_values;
+use function is_array;
 use function is_string;
 
-final class DocumentHydrator implements HydratorWithContext
+/** @internal */
+final class DocumentHydrator
 {
     private const ID_FIELD_NAME = '_id';
 
     private string|null $fieldNameOverride;
 
     public function __construct(
-        private readonly HydratorWithContext $hydrator,
+        private readonly Hydrator $hydrator,
         private readonly DocumentMetadata $documentMetadata,
     ) {
         $this->fieldNameOverride = $this->documentMetadata->fields[$this->documentMetadata->idProperty]->fieldNameOverride;
@@ -28,7 +30,6 @@ final class DocumentHydrator implements HydratorWithContext
     /**
      * @param class-string<T>      $class
      * @param array<string, mixed> $data
-     * @param array<string, mixed> $context
      *
      * @return T
      *
@@ -36,7 +37,7 @@ final class DocumentHydrator implements HydratorWithContext
      *
      * @template T of object
      */
-    public function hydrate(string $class, array $data, array $context = []): object
+    public function hydrate(string $class, array $data): object
     {
         if ($this->fieldNameOverride) {
             $data[$this->fieldNameOverride] = $data[self::ID_FIELD_NAME];
@@ -67,17 +68,24 @@ final class DocumentHydrator implements HydratorWithContext
             $class = $concreteClass;
         }
 
-        return $this->hydrator->hydrate($class, $data, $context);
+        return $this->hydrator->hydrate($class, $data);
     }
 
     /**
-     * @param array<string, mixed> $context
-     *
      * @return array<string, mixed>
+     *
+     * @throws DocumentNotExtractable
      */
-    public function extract(object $object, array $context = []): array
+    public function extract(object $object): array
     {
-        $data = $this->hydrator->extract($object, $context);
+        $extracted = $this->hydrator->extract($object);
+
+        if (!is_array($extracted)) {
+            throw new DocumentNotExtractable($object::class, $extracted);
+        }
+
+        /** @var array<string, mixed> $data */
+        $data = $extracted;
 
         if ($this->fieldNameOverride) {
             $data[self::ID_FIELD_NAME] = $data[$this->fieldNameOverride];

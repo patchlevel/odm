@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Repository;
 
-use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\StackHydrator;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
 use Patchlevel\ODM\Metadata\DocumentMetadataFactory;
@@ -19,7 +19,7 @@ final class RangoRepositoryManager implements RepositoryManager
     public function __construct(
         private readonly Client $client,
         private readonly DocumentMetadataFactory $metadataFactory,
-        private readonly HydratorWithContext $hydrator,
+        private readonly Hydrator $hydrator,
         private readonly string $defaultDatabase = 'public',
     ) {
     }

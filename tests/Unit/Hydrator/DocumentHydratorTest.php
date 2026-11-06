@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Tests\Unit\Hydrator;
 
+use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\Hydrator\StackHydrator;
 use Patchlevel\ODM\Hydrator\DocumentHydrator;
+use Patchlevel\ODM\Hydrator\DocumentNotExtractable;
 use Patchlevel\ODM\Hydrator\UnknownDiscriminatorValue;
 use Patchlevel\ODM\Metadata\AttributeDocumentMetadataFactory;
+use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\ODM\Metadata\StackHydratorFieldMappingResolver;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Image;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Media;
@@ -17,17 +20,17 @@ use PHPUnit\Framework\TestCase;
 
 #[CoversClass(DocumentHydrator::class)]
 #[CoversClass(UnknownDiscriminatorValue::class)]
+#[CoversClass(DocumentNotExtractable::class)]
 final class DocumentHydratorTest extends TestCase
 {
+    private StackHydrator $stackHydrator;
+
     private DocumentHydrator $hydrator;
 
     protected function setUp(): void
     {
-        $stackHydrator = new StackHydrator();
-        $metadata = (new AttributeDocumentMetadataFactory(new StackHydratorFieldMappingResolver($stackHydrator)))
-            ->metadata(Media::class);
-
-        $this->hydrator = new DocumentHydrator($stackHydrator, $metadata);
+        $this->stackHydrator = new StackHydrator();
+        $this->hydrator = new DocumentHydrator($this->stackHydrator, $this->metadata());
     }
 
     public function testExtractWritesTheDiscriminatorValue(): void
@@ -62,5 +65,37 @@ final class DocumentHydratorTest extends TestCase
         $this->expectException(UnknownDiscriminatorValue::class);
 
         $this->hydrator->hydrate(Media::class, ['_id' => 'm-1', 'title' => 'Picture', '_type' => 'audio']);
+    }
+
+    public function testExtractFailsIfTheHydratorDoesNotReturnAnArray(): void
+    {
+        $hydrator = new DocumentHydrator(
+            new class implements Hydrator {
+                /** @param array<string, mixed> $context */
+                public function hydrate(string $class, mixed $data, array $context = []): object
+                {
+                    return new $class();
+                }
+
+                /** @param array<string, mixed> $context */
+                public function extract(object $object, array $context = []): mixed
+                {
+                    return 'm-1';
+                }
+            },
+            $this->metadata(),
+        );
+
+        $this->expectException(DocumentNotExtractable::class);
+        $this->expectExceptionMessage('The hydrator returned "string" instead of an array for the document "' . Image::class . '".');
+
+        $hydrator->extract(new Image('m-1', 'Picture', 800));
+    }
+
+    /** @return DocumentMetadata<Media> */
+    private function metadata(): DocumentMetadata
+    {
+        return (new AttributeDocumentMetadataFactory(new StackHydratorFieldMappingResolver($this->stackHydrator)))
+            ->metadata(Media::class);
     }
 }
