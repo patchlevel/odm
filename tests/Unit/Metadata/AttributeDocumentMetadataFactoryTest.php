@@ -23,10 +23,10 @@ use Patchlevel\ODM\Metadata\VersionPropertyIsReadonly;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Address;
 use Patchlevel\ODM\Tests\Unit\Fixtures\DocumentBase;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Profile;
+use Patchlevel\ODM\Tests\Unit\Fixtures\Shape;
 use Patchlevel\ODM\Tests\Unit\Fixtures\SkillNormalizer;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 
 #[CoversClass(AttributeDocumentMetadataFactory::class)]
 #[CoversClass(ClassIsNotAnDocument::class)]
@@ -158,13 +158,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
 
         $fieldResolver = new class implements FieldMappingResolver
         {
-            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping|null
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                if ($reflectionProperty->getName() === 'status') {
-                    return new FieldMapping('_newStatus', []);
-                }
-
-                return null;
+                return ['status' => new FieldMapping('_newStatus', [])];
             }
         };
 
@@ -190,13 +187,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
 
         $fieldResolver = new class implements FieldMappingResolver
         {
-            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping|null
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                if ($reflectionProperty->getName() === 'id') {
-                    return new FieldMapping('_otherId', []);
-                }
-
-                return null;
+                return ['id' => new FieldMapping('_otherId', [])];
             }
         };
 
@@ -251,13 +245,10 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
 
         $fieldResolver = new class implements FieldMappingResolver
         {
-            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping|null
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                if ($reflectionProperty->getName() === 'version') {
-                    return new FieldMapping('_version', []);
-                }
-
-                return null;
+                return ['version' => new FieldMapping('_version', [])];
             }
         };
 
@@ -320,5 +311,14 @@ final class AttributeDocumentMetadataFactoryTest extends TestCase
         $this->expectException(DocumentHasClassNormalizer::class);
 
         $factory->metadata($document::class);
+    }
+
+    public function testMetadataOfAHierarchyWhereOnlyASubclassHasAClassNormalizer(): void
+    {
+        $factory = new AttributeDocumentMetadataFactory(new StackHydratorFieldMappingResolver(new StackHydrator()));
+
+        $this->expectException(DocumentHasClassNormalizer::class);
+
+        $factory->metadata(Shape::class);
     }
 }

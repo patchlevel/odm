@@ -147,22 +147,14 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         $fields = [];
 
         foreach ($classNames as $className) {
-            $reflection = new ReflectionClass($className);
+            $mappings = $this->fieldResolver?->resolve($className) ?? [];
+            $mappings[$idProperty] = new FieldMapping('_id', [], ($mappings[$idProperty] ?? null)?->fieldName);
 
-            foreach ($reflection->getProperties() as $reflectionProperty) {
-                $name = $reflectionProperty->getName();
-                $field = $this->fieldResolver?->resolve($className, $reflectionProperty);
+            if ($versionProperty !== null) {
+                $mappings[$versionProperty] ??= new FieldMapping($versionProperty);
+            }
 
-                if ($idProperty === $name) {
-                    $mapping = new FieldMapping('_id', [], $field?->fieldName);
-                } elseif ($versionProperty === $name) {
-                    $mapping = $field ?? new FieldMapping($name);
-                } elseif ($field !== null) {
-                    $mapping = $field;
-                } else {
-                    continue;
-                }
-
+            foreach ($mappings as $name => $mapping) {
                 if (isset($fields[$name])) {
                     if (!$this->fieldMappingEquals($fields[$name], $mapping)) {
                         throw new DiscriminatorFieldConflict(

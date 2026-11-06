@@ -20,7 +20,7 @@ use Patchlevel\ODM\Tests\Unit\Fixtures\Media;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Video;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
+use ReflectionClass;
 
 use function array_keys;
 
@@ -75,15 +75,19 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     public function testConflictingFieldMappingAcrossSubclasses(): void
     {
         $resolver = new class implements FieldMappingResolver {
-            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                $name = $reflectionProperty->getName();
+                $fields = [];
 
-                if ($name === 'format' && $reflectionProperty->getDeclaringClass()->getShortName() === 'Video') {
-                    return new FieldMapping('video_format');
+                foreach ((new ReflectionClass($className))->getProperties() as $property) {
+                    $name = $property->getName();
+                    $fields[$name] = new FieldMapping(
+                        $name === 'format' && $className === Video::class ? 'video_format' : $name,
+                    );
                 }
 
-                return new FieldMapping($name);
+                return $fields;
             }
         };
 
@@ -135,9 +139,16 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     private function fieldResolver(): FieldMappingResolver
     {
         return new class implements FieldMappingResolver {
-            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                return new FieldMapping($reflectionProperty->getName());
+                $fields = [];
+
+                foreach ((new ReflectionClass($className))->getProperties() as $property) {
+                    $fields[$property->getName()] = new FieldMapping($property->getName());
+                }
+
+                return $fields;
             }
         };
     }

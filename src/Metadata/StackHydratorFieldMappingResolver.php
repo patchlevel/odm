@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Metadata;
 
+use Patchlevel\Hydrator\Metadata\ClassMetadata;
 use Patchlevel\Hydrator\Metadata\PropertyMetadata;
 use Patchlevel\Hydrator\Normalizer\ArrayNormalizer;
 use Patchlevel\Hydrator\Normalizer\ArrayShapeNormalizer;
 use Patchlevel\Hydrator\Normalizer\Normalizer;
 use Patchlevel\Hydrator\Normalizer\ObjectNormalizer;
 use Patchlevel\Hydrator\StackHydrator;
-use ReflectionProperty;
 
 final readonly class StackHydratorFieldMappingResolver implements FieldMappingResolver
 {
@@ -22,9 +22,11 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
     /**
      * @param class-string $className
      *
+     * @return array<string, FieldMapping>
+     *
      * @throws DocumentHasClassNormalizer
      */
-    public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
+    public function resolve(string $className): array
     {
         $metadata = $this->hydrator->metadata($className);
 
@@ -32,9 +34,19 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
             throw new DocumentHasClassNormalizer($className, $metadata->normalizer::class);
         }
 
-        $property = $metadata->properties[$reflectionProperty->getName()];
+        return $this->resolveProperties($metadata);
+    }
 
-        return $this->resolvePropertyMetadata($property);
+    /** @return array<string, FieldMapping> */
+    private function resolveProperties(ClassMetadata $metadata): array
+    {
+        $fields = [];
+
+        foreach ($metadata->properties as $property) {
+            $fields[$property->propertyName] = $this->resolvePropertyMetadata($property);
+        }
+
+        return $fields;
     }
 
     private function resolvePropertyMetadata(PropertyMetadata $property): FieldMapping
@@ -66,15 +78,10 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
     private function resolveObjectNormalizer(string $fieldName, ObjectNormalizer $objectNormalizer): FieldMapping
     {
         $metadata = $this->hydrator->metadata($objectNormalizer->className());
-        $children = [];
-
-        foreach ($metadata->properties as $property) {
-            $children[$property->propertyName] = $this->resolvePropertyMetadata($property);
-        }
 
         return new FieldMapping(
             $fieldName,
-            $children,
+            $this->resolveProperties($metadata),
         );
     }
 
