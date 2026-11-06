@@ -51,6 +51,7 @@ backend ships its own key store; the rest of the setup is the same.
 For PostgreSQL via Rango:
 
 ```php
+use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\Extension\Cryptography\BaseCryptographer;
 use Patchlevel\Hydrator\Extension\Cryptography\CryptographyExtension;
 use Patchlevel\Hydrator\StackHydratorBuilder;
@@ -64,6 +65,7 @@ $keyStore = new RangoCipherKeyStore($client->selectDatabase('public'));
 $cryptographer = BaseCryptographer::createWithOpenssl($keyStore);
 
 $hydrator = (new StackHydratorBuilder())
+    ->useExtension(new CoreExtension())
     ->useExtension(new CryptographyExtension($cryptographer))
     ->build();
 
@@ -73,6 +75,7 @@ For MongoDB:
 
 ```php
 use MongoDB\Client;
+use Patchlevel\Hydrator\CoreExtension;
 use Patchlevel\Hydrator\Extension\Cryptography\BaseCryptographer;
 use Patchlevel\Hydrator\Extension\Cryptography\CryptographyExtension;
 use Patchlevel\Hydrator\StackHydratorBuilder;
@@ -85,6 +88,7 @@ $keyStore = new MongoDBCipherKeyStore($client->selectDatabase('default'));
 $cryptographer = BaseCryptographer::createWithOpenssl($keyStore);
 
 $hydrator = (new StackHydratorBuilder())
+    ->useExtension(new CoreExtension())
     ->useExtension(new CryptographyExtension($cryptographer))
     ->build();
 
