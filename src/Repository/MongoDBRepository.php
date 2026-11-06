@@ -191,6 +191,8 @@ final readonly class MongoDBRepository implements Repository
 
     public function remove(string ...$id): void
     {
+        $id = array_values($id);
+
         if (count($id) === 1) {
             $this->collection->deleteOne($this->withDiscriminator(['_id' => $id[0]]));
 

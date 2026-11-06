@@ -427,6 +427,34 @@ abstract class RepositoryTestCase extends TestCase
         self::assertSame(1, $repository->count());
     }
 
+    public function testWriteOperationsAcceptStringKeyedArguments(): void
+    {
+        $repository = $this->repositoryManager->get(Profile::class);
+
+        $repository->insert(...['first' => new Profile('r-1', 'Rango', Status::ACTIVE, [new Skill('php')])]);
+        $repository->insert(...[
+            'second' => new Profile('r-2', 'Beans', Status::INACTIVE, [new Skill('js')]),
+            'third' => new Profile('r-3', 'Elsa', Status::ACTIVE, [new Skill('go')]),
+        ]);
+
+        self::assertSame(3, $repository->count());
+
+        $repository->update(...['first' => new Profile('r-1', 'Rango Updated', Status::ACTIVE, [new Skill('php')])]);
+        $repository->update(...[
+            'second' => new Profile('r-2', 'Beans Updated', Status::INACTIVE, [new Skill('js')]),
+            'third' => new Profile('r-3', 'Elsa Updated', Status::ACTIVE, [new Skill('go')]),
+        ]);
+
+        self::assertSame('Rango Updated', $repository->get('r-1')->name);
+        self::assertSame('Beans Updated', $repository->get('r-2')->name);
+        self::assertSame('Elsa Updated', $repository->get('r-3')->name);
+
+        $repository->remove(...['first' => 'r-1']);
+        $repository->remove(...['second' => 'r-2', 'third' => 'r-3']);
+
+        self::assertSame(0, $repository->count());
+    }
+
     public function testDropCollection(): void
     {
         $repository = $this->repositoryManager->get(Profile::class);
