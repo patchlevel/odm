@@ -8,5 +8,6 @@ use ReflectionProperty;
 
 interface FieldMappingResolver
 {
-    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null;
+    /** @param class-string $className the document class the property is mapped for */
+    public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping|null;
 }

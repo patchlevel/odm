@@ -19,9 +19,19 @@ final readonly class StackHydratorFieldMappingResolver implements FieldMappingRe
     ) {
     }
 
-    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
+    /**
+     * @param class-string $className
+     *
+     * @throws DocumentHasClassNormalizer
+     */
+    public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
     {
-        $metadata = $this->hydrator->metadata($reflectionProperty->getDeclaringClass()->getName());
+        $metadata = $this->hydrator->metadata($className);
+
+        if ($metadata->normalizer !== null) {
+            throw new DocumentHasClassNormalizer($className, $metadata->normalizer::class);
+        }
+
         $property = $metadata->properties[$reflectionProperty->getName()];
 
         return $this->resolvePropertyMetadata($property);

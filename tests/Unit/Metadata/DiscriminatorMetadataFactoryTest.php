@@ -75,7 +75,7 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     public function testConflictingFieldMappingAcrossSubclasses(): void
     {
         $resolver = new class implements FieldMappingResolver {
-            public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
+            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
             {
                 $name = $reflectionProperty->getName();
 
@@ -135,7 +135,7 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     private function fieldResolver(): FieldMappingResolver
     {
         return new class implements FieldMappingResolver {
-            public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
+            public function resolve(string $className, ReflectionProperty $reflectionProperty): FieldMapping
             {
                 return new FieldMapping($reflectionProperty->getName());
             }
