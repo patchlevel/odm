@@ -147,14 +147,11 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         $fields = [];
 
         foreach ($classNames as $className) {
-            $mappings = $this->fieldResolver?->resolve($className) ?? [];
-            $mappings[$idProperty] = new FieldMapping('_id', [], ($mappings[$idProperty] ?? null)?->fieldName);
+            foreach ($this->fieldResolver?->resolve($className) ?? [] as $name => $mapping) {
+                if ($name === $idProperty) {
+                    $mapping = new FieldMapping('_id', [], $mapping->fieldName);
+                }
 
-            if ($versionProperty !== null) {
-                $mappings[$versionProperty] ??= new FieldMapping($versionProperty);
-            }
-
-            foreach ($mappings as $name => $mapping) {
                 if (isset($fields[$name])) {
                     if (!$this->fieldMappingEquals($fields[$name], $mapping)) {
                         throw new DiscriminatorFieldConflict(
@@ -170,6 +167,12 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 
                 $fields[$name] = $mapping;
             }
+        }
+
+        $fields[$idProperty] ??= new FieldMapping('_id');
+
+        if ($versionProperty !== null) {
+            $fields[$versionProperty] ??= new FieldMapping($versionProperty);
         }
 
         return $fields;

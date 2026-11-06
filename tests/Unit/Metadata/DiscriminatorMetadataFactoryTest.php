@@ -17,6 +17,7 @@ use Patchlevel\ODM\Metadata\InvalidDiscriminatorMap;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Address;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Image;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Media;
+use Patchlevel\ODM\Tests\Unit\Fixtures\Shape;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Video;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -96,6 +97,15 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
         $this->expectException(DiscriminatorFieldConflict::class);
 
         $factory->metadata(Media::class);
+    }
+
+    public function testAPrivateRootIdIsOnlyMappedWhereTheResolverSeesIt(): void
+    {
+        $factory = new AttributeDocumentMetadataFactory($this->fieldResolver());
+        $metadata = $factory->metadata(Shape::class);
+
+        self::assertEquals(new FieldMapping('_id', [], 'id'), $metadata->fields['id']);
+        self::assertEquals(new FieldMapping('radius'), $metadata->fields['radius']);
     }
 
     public function testMapEntryThatIsNotASubtype(): void
