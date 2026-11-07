@@ -122,6 +122,7 @@ final readonly class DocumentMetadata
         return [$this->discriminatorField => ['$in' => $this->discriminatorValues]];
     }
 
+    /** @throws UnknownPropertyPath */
     public function propertyPathToFieldPath(string $propertyPath): string
     {
         return $this->propertyPathToFieldPathWithChildren($propertyPath, $this->fields)[0];
@@ -131,6 +132,8 @@ final readonly class DocumentMetadata
      * @param array<string, mixed> $filter
      *
      * @return array<string, mixed>
+     *
+     * @throws UnknownPropertyPath
      */
     public function mapFilterToFieldPaths(array $filter): array
     {
@@ -210,6 +213,8 @@ final readonly class DocumentMetadata
      * @param array<string, 'asc' | 'desc'> $orderBy
      *
      * @return array<string, -1|1>
+     *
+     * @throws UnknownPropertyPath
      */
     public function mapSortingToFieldPaths(array $orderBy): array
     {
