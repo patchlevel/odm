@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Metadata;
 
-use ReflectionProperty;
-
 interface FieldMappingResolver
 {
-    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null;
+    /**
+     * @param class-string $className
+     *
+     * @return array<string, FieldMapping> keyed by property name
+     */
+    public function resolve(string $className): array;
 }

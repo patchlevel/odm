@@ -147,20 +147,9 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
         $fields = [];
 
         foreach ($classNames as $className) {
-            $reflection = new ReflectionClass($className);
-
-            foreach ($reflection->getProperties() as $reflectionProperty) {
-                $name = $reflectionProperty->getName();
-                $field = $this->fieldResolver?->resolve($reflectionProperty);
-
-                if ($idProperty === $name) {
-                    $mapping = new FieldMapping('_id', [], $field?->fieldName);
-                } elseif ($versionProperty === $name) {
-                    $mapping = $field ?? new FieldMapping($name);
-                } elseif ($field !== null) {
-                    $mapping = $field;
-                } else {
-                    continue;
+            foreach ($this->fieldResolver?->resolve($className) ?? [] as $name => $mapping) {
+                if ($name === $idProperty) {
+                    $mapping = new FieldMapping('_id', [], $mapping->fieldName);
                 }
 
                 if (isset($fields[$name])) {
@@ -178,6 +167,12 @@ final class AttributeDocumentMetadataFactory implements DocumentMetadataFactory
 
                 $fields[$name] = $mapping;
             }
+        }
+
+        $fields[$idProperty] ??= new FieldMapping('_id');
+
+        if ($versionProperty !== null) {
+            $fields[$versionProperty] ??= new FieldMapping($versionProperty);
         }
 
         return $fields;

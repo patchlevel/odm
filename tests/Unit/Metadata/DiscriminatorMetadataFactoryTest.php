@@ -17,10 +17,11 @@ use Patchlevel\ODM\Metadata\InvalidDiscriminatorMap;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Address;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Image;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Media;
+use Patchlevel\ODM\Tests\Unit\Fixtures\Shape;
 use Patchlevel\ODM\Tests\Unit\Fixtures\Video;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
+use ReflectionClass;
 
 use function array_keys;
 
@@ -75,15 +76,19 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     public function testConflictingFieldMappingAcrossSubclasses(): void
     {
         $resolver = new class implements FieldMappingResolver {
-            public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                $name = $reflectionProperty->getName();
+                $fields = [];
 
-                if ($name === 'format' && $reflectionProperty->getDeclaringClass()->getShortName() === 'Video') {
-                    return new FieldMapping('video_format');
+                foreach ((new ReflectionClass($className))->getProperties() as $property) {
+                    $name = $property->getName();
+                    $fields[$name] = new FieldMapping(
+                        $name === 'format' && $className === Video::class ? 'video_format' : $name,
+                    );
                 }
 
-                return new FieldMapping($name);
+                return $fields;
             }
         };
 
@@ -92,6 +97,15 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
         $this->expectException(DiscriminatorFieldConflict::class);
 
         $factory->metadata(Media::class);
+    }
+
+    public function testAPrivateRootIdIsOnlyMappedWhereTheResolverSeesIt(): void
+    {
+        $factory = new AttributeDocumentMetadataFactory($this->fieldResolver());
+        $metadata = $factory->metadata(Shape::class);
+
+        self::assertEquals(new FieldMapping('_id', [], 'id'), $metadata->fields['id']);
+        self::assertEquals(new FieldMapping('radius'), $metadata->fields['radius']);
     }
 
     public function testMapEntryThatIsNotASubtype(): void
@@ -135,9 +149,16 @@ final class DiscriminatorMetadataFactoryTest extends TestCase
     private function fieldResolver(): FieldMappingResolver
     {
         return new class implements FieldMappingResolver {
-            public function resolve(ReflectionProperty $reflectionProperty): FieldMapping
+            /** @return array<string, FieldMapping> */
+            public function resolve(string $className): array
             {
-                return new FieldMapping($reflectionProperty->getName());
+                $fields = [];
+
+                foreach ((new ReflectionClass($className))->getProperties() as $property) {
+                    $fields[$property->getName()] = new FieldMapping($property->getName());
+                }
+
+                return $fields;
             }
         };
     }
