@@ -41,14 +41,14 @@ jobs:
               uses: actions/checkout@v6
 
             - name: "Install PHP"
-              uses: "shivammathur/setup-php@2.36.0"
+              uses: "shivammathur/setup-php@2.40.0"
               with:
                   coverage: "pcov"
                   php-version: "${{ matrix.php-version }}"
                   ini-values: memory_limit=-1
                   extensions: pdo_pgsql,mongodb
 
-            - uses: ramsey/composer-install@3.1.1
+            - uses: ramsey/composer-install@3.2.1
               with:
                 dependency-versions: ${{ matrix.dependencies }}
                 composer-options: ${{ matrix.composer-options }}
