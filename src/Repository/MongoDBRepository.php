@@ -12,6 +12,7 @@ use Patchlevel\ODM\Hydrator\DocumentHydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 
 use function array_map;
+use function array_values;
 use function count;
 use function in_array;
 use function iterator_to_array;
@@ -40,6 +41,8 @@ final readonly class MongoDBRepository implements Repository
     /** @param list<T> ...$objects */
     public function insert(object ...$objects): void
     {
+        $objects = array_values($objects);
+
         try {
             if (count($objects) === 1) {
                 $object = $objects[0];
@@ -72,6 +75,8 @@ final readonly class MongoDBRepository implements Repository
         if (count($objects) === 0) {
             return;
         }
+
+        $objects = array_values($objects);
 
         if (count($objects) === 1) {
             $update = $this->prepareUpdate($objects[0]);
