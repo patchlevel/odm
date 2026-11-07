@@ -17,6 +17,7 @@
         { "title": "Encryption", "file": "encryption.md" },
         { "title": "Databases", "file": "databases.md" }
       ]
-    }
+    },
+    { "title": "Upgrade from 1.x", "file": "UPGRADE-2.0.md" }
   ]
 }

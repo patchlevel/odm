@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Patchlevel\ODM\Repository;
 
-use Patchlevel\Hydrator\HydratorWithContext;
+use Patchlevel\Hydrator\Hydrator;
 use Patchlevel\ODM\Hydrator\DocumentHydrator;
 use Patchlevel\ODM\Metadata\DocumentMetadata;
 use Patchlevel\Rango\Collection;
@@ -31,7 +31,7 @@ final readonly class RangoRepository implements Repository
     public function __construct(
         private Database $database,
         private DocumentMetadata $metadata,
-        HydratorWithContext $hydrator,
+        Hydrator $hydrator,
     ) {
         $this->hydrator = new DocumentHydrator($hydrator, $metadata);
         $this->collection = $this->database->getCollection($this->metadata->collection);
