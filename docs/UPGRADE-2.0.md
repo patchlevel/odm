@@ -74,6 +74,17 @@ final class SkillNormalizer implements Normalizer
     }
 }
 ```
+### Documents with a class level normalizer
+
+Hydrator 2 uses a normalizer on a class, on one of its parents or on an implemented interface for the whole
+object, and a guesser that matches the class has the same effect. Documents are stored field by field, so a
+document class must not end up with such a normalizer. The `StackHydratorFieldMappingResolver`, which the
+repository managers' `create()` sets up, now throws `Patchlevel\ODM\Metadata\DocumentHasClassNormalizer`
+when it builds the metadata of such a document.
+
+Remove the normalizer from the document class, its parents and its interfaces, and make sure no guesser
+matches a document class. Put normalizers on the value objects inside the document instead.
+
 ### Custom hydrators
 
 The repository managers and repositories now take a `Patchlevel\Hydrator\Hydrator` instead of a
@@ -135,3 +146,52 @@ final class LoggingHydrator implements Hydrator
 
 `Patchlevel\ODM\Hydrator\DocumentHydrator` is internal now and no longer implements the `Hydrator`
 interface. Load and store documents through the repository instead of using it directly.
+
+## Field Mapping
+
+### FieldMappingResolver
+
+`FieldMappingResolver::resolve()` now works per class instead of per property. It receives a document class
+and returns the field mappings of all its properties, keyed by property name. With inheritance it is called
+for the root and for every class in the discriminator map. Properties you leave out are not mapped, except
+the id and version properties, which always are.
+
+before:
+
+```php
+use Patchlevel\ODM\Metadata\FieldMapping;
+use Patchlevel\ODM\Metadata\FieldMappingResolver;
+
+final class PropertyNameFieldMappingResolver implements FieldMappingResolver
+{
+    public function resolve(ReflectionProperty $reflectionProperty): FieldMapping|null
+    {
+        return new FieldMapping($reflectionProperty->getName());
+    }
+}
+```
+after:
+
+```php
+use Patchlevel\ODM\Metadata\FieldMapping;
+use Patchlevel\ODM\Metadata\FieldMappingResolver;
+
+final class PropertyNameFieldMappingResolver implements FieldMappingResolver
+{
+    /**
+     * @param class-string $className
+     *
+     * @return array<string, FieldMapping>
+     */
+    public function resolve(string $className): array
+    {
+        $fields = [];
+
+        foreach ((new ReflectionClass($className))->getProperties() as $property) {
+            $fields[$property->getName()] = new FieldMapping($property->getName());
+        }
+
+        return $fields;
+    }
+}
+```

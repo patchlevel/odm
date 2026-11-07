@@ -145,6 +145,11 @@ final readonly class Skill
     }
 }
 ```
+A document itself must not end up with a normalizer, neither on its class, a parent or an interface it
+implements, nor through a guesser, because documents are always stored field by field. The
+`StackHydratorFieldMappingResolver`, which `create()` sets up, throws `DocumentHasClassNormalizer` when it
+builds the metadata of such a document.
+
 :::tip
 The hydrator ships normalizers for enums, dates and arrays out of the box. See the
 [hydrator documentation](https://patchlevel.dev/docs/hydrator/latest) for the full list.

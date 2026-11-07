@@ -104,6 +104,8 @@ $images->insert(new Video('m-3', 'Clip', 30)); // throws WrongClass
   collection. Declare hierarchy-wide indexes there.
 * Discriminator values are stored in every document, so keep them short and never change one once data
   exists.
+* No class in the hierarchy may have a class level normalizer, otherwise the metadata factory throws
+  `DocumentHasClassNormalizer`.
 
 :::warning
 The discriminator map is validated when the metadata is built. Mapping a value to a class that does
