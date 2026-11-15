@@ -38,7 +38,7 @@ jobs:
                       operating-system: "windows-latest"
         steps:
             - name: "Checkout"
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
 
             - name: "Install PHP"
               uses: "shivammathur/setup-php@2.36.0"
@@ -48,7 +48,7 @@ jobs:
                   ini-values: memory_limit=-1
                   extensions: pdo_pgsql,mongodb
 
-            - uses: ramsey/composer-install@3.1.1
+            - uses: ramsey/composer-install@4.0.0
               with:
                 dependency-versions: ${{ matrix.dependencies }}
                 composer-options: ${{ matrix.composer-options }}
